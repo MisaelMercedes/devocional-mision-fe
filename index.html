@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Devocional Misión Fe</title>
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // URL de tu API de Google Apps Script
+    const API_URL = "https://script.google.com/macros/s/AKfycbxYhqLR6MhZLp95ct9no7DdouuoRazpBzUfHPbayYDKuJHUd-8zJmZKZ1fSH9dqRy3L-g/exec"; 
+    
+    let currentStep = 1;
+    let devocionalData = null;
+    let tg = window.Telegram?.WebApp;
+
+    if (tg) {
+      tg.ready();
+      tg.expand();
+    }
+
+    async function cargarDevocional() {
+      try {
+        let response = await fetch(`${API_URL}?action=getDevocionalHoy`);
+        let res = await response.json();
+        if (res.success) {
+          devocionalData = res.devocional;
+          renderDevocional();
+        } else {
+          document.getElementById('loading').innerText = "No hay devocional disponible para hoy.";
+        }
+      } catch (e) {
+        console.error(e);
+        document.getElementById('loading').innerText = "Error al conectar con el servidor.";
+      }
+    }
+
+    function renderDevocional() {
+      document.getElementById('loading').classList.add('hidden');
+      document.getElementById('app-content').classList.remove('hidden');
+
+      // Fecha y pasaje
+      document.getElementById('fecha-txt').innerText = devocionalData.fecha || "Hoy";
+      document.getElementById('pasaje-title').innerText = devocionalData.pasaje || "";
+      document.getElementById('lectura-txt').innerText = devocionalData.lectura || "";
+      document.getElementById('reflexion-txt').innerText = devocionalData.reflexion || "";
+      document.getElementById('autoanalisis-txt').innerText = devocionalData.autoanalisis || "";
+      document.getElementById('oracion-txt').innerText = devocionalData.oracion || "";
+      document.getElementById('desafio-txt').innerText = devocionalData.desafio || "";
+    }
+
+    function irAStep(step) {
+      document.querySelectorAll('.step-pane').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`step-${step}`).classList.remove('hidden');
+      window.scrollTo(0,0);
+      currentStep = step;
+    }
+
+    async function finalizarDevocional() {
+      let compromiso = document.getElementById('compromiso-input').value;
+      let telegramId = tg?.initDataUnsafe?.user?.id || "999999";
+      let nombre = tg?.initDataUnsafe?.user?.first_name || "Hermano(a)";
+
+      document.getElementById('btn-finalizar').innerText = "Guardando...";
+      document.getElementById('btn-finalizar').disabled = true;
+
+      try {
+        let response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: "registrarLectura",
+            telegramId: telegramId,
+            nombre: nombre,
+            idDevocional: devocionalData.id,
+            compromiso: compromiso
+          })
+        });
+        let res = await response.json();
+        
+        if (res.success) {
+          document.getElementById('racha-val').innerText = `${res.racha} días`;
+          actualizarArbolVisual(res.nivelArbol);
+          irAStep(6);
+        } else {
+          alert(res.message || "Ocurrió un error al registrar.");
+        }
+      } catch (e) {
+        alert("Error de conexión al guardar.");
+      } finally {
+        document.getElementById('btn-finalizar').innerText = "Completar Devocional";
+        document.getElementById('btn-finalizar').disabled = false;
+      }
+    }
+
+    function actualizarArbolVisual(nivel) {
+      let arboles = {
+        1: { emoji: "🌱", txt: "Brote: Echando raíces en la Palabra" },
+        2: { emoji: "🌿", txt: "Arbolito: Creciendo junto a corrientes de agua" },
+        3: { emoji: "🌸", txt: "En Flor: Tu vida comienza a florecer" },
+        4: { emoji: "🌳🍎", txt: "Frutuoso: Dando mucho fruto para la gloria de Dios" }
+      };
+      let info = arboles[nivel] || arboles[1];
+      document.getElementById('arbol-emoji').innerText = info.emoji;
+      document.getElementById('arbol-txt').innerText = info.txt;
+    }
+
+    document.addEventListener("DOMContentLoaded", cargarDevocional);
+  </script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col justify-between p-4 max-w-md mx-auto">
+
+  <!-- PANTALLA DE CARGA -->
+  <div id="loading" class="flex-1 flex items-center justify-center text-center p-6 text-sky-400 font-medium">
+    Cargando tiempo devocional de Misión Fe...
+  </div>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div id="app-content" class="hidden flex-1 flex flex-col justify-between">
+
+    <!-- PASO 1: INICIO -->
+    <div id="step-1" class="step-pane flex flex-col items-center text-center my-auto space-y-6">
+      <div class="bg-sky-500/10 border border-sky-500/30 text-sky-300 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide">
+        MISIÓN FE • DEVOCIONAL DIARIO
+      </div>
+      <h1 class="text-3xl font-bold tracking-tight text-white">Tiempo con Dios</h1>
+      <p id="fecha-txt" class="text-slate-400 text-sm"></p>
+      
+      <div class="p-6 bg-slate-800/80 rounded-2xl border border-slate-700/50 w-full space-y-3">
+        <span class="text-4xl">📖</span>
+        <h2 id="pasaje-title" class="text-xl font-bold text-sky-400"></h2>
+        <p class="text-xs text-slate-400">Prepara tu corazón para escuchar la voz del Señor hoy.</p>
+      </div>
+
+      <button onclick="irAStep(2)" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg shadow-sky-500/20">
+        Sigue con la lectura
+      </button>
+    </div>
+
+    <!-- PASO 2: LECTURA BÍBLICA -->
+    <div id="step-2" class="step-pane hidden space-y-6">
+      <div class="space-y-1">
+        <span class="text-xs text-sky-400 font-semibold uppercase tracking-wider">Paso 1 de 4</span>
+        <h2 class="text-2xl font-bold">Lectura Bíblica</h2>
+      </div>
+      
+      <div class="p-5 bg-slate-800/60 rounded-2xl border border-slate-700/50 text-slate-200 text-sm leading-relaxed space-y-3 max-h-[60vh] overflow-y-auto">
+        <p id="lectura-txt" class="whitespace-pre-line"></p>
+      </div>
+
+      <button onclick="irAStep(3)" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-3.5 rounded-xl transition">
+        Continuar
+      </button>
+    </div>
+
+    <!-- PASO 3: DEVOCIONAL & REFLEXIÓN -->
+    <div id="step-3" class="step-pane hidden space-y-6">
+      <div class="space-y-1">
+        <span class="text-xs text-sky-400 font-semibold uppercase tracking-wider">Paso 2 de 4</span>
+        <h2 class="text-2xl font-bold">Reflexión</h2>
+      </div>
+      
+      <div class="p-5 bg-slate-800/60 rounded-2xl border border-slate-700/50 space-y-4">
+        <p id="reflexion-txt" class="text-slate-200 text-sm leading-relaxed whitespace-pre-line"></p>
+        
+        <div class="p-3 bg-sky-950/40 border border-sky-800/50 rounded-xl">
+          <p class="text-xs font-semibold text-sky-300 mb-1">🤔 Autoanálisis:</p>
+          <p id="autoanalisis-txt" class="text-xs text-slate-300 italic"></p>
+        </div>
+      </div>
+
+      <button onclick="irAStep(4)" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-3.5 rounded-xl transition">
+        Continuar
+      </button>
+    </div>
+
+    <!-- PASO 4: PUNTOS PARA ORAR -->
+    <div id="step-4" class="step-pane hidden space-y-6">
+      <div class="space-y-1">
+        <span class="text-xs text-sky-400 font-semibold uppercase tracking-wider">Paso 3 de 4</span>
+        <h2 class="text-2xl font-bold">Puntos de Oración</h2>
+      </div>
+      
+      <div class="p-5 bg-slate-800/60 rounded-2xl border border-slate-700/50 space-y-3">
+        <div class="flex items-start space-x-3">
+          <span class="text-lg">🙏</span>
+          <p id="oracion-txt" class="text-slate-200 text-sm leading-relaxed whitespace-pre-line"></p>
+        </div>
+      </div>
+
+      <button onclick="irAStep(5)" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-3.5 rounded-xl transition">
+        Continuar
+      </button>
+    </div>
+
+    <!-- PASO 5: LLÉVALO A LA VIDA -->
+    <div id="step-5" class="step-pane hidden space-y-6">
+      <div class="space-y-1">
+        <span class="text-xs text-sky-400 font-semibold uppercase tracking-wider">Paso 4 de 4</span>
+        <h2 class="text-2xl font-bold">Llévalo a la Vida</h2>
+      </div>
+      
+      <div class="p-5 bg-slate-800/60 rounded-2xl border border-slate-700/50 space-y-4">
+        <p id="desafio-txt" class="text-slate-200 text-sm font-medium"></p>
+        <div>
+          <label class="block text-xs text-slate-400 mb-2">Tu compromiso para hoy (opcional):</label>
+          <input id="compromiso-input" type="text" placeholder="Ej. Llamaré a mi hermano para pedirle perdón..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 focus:outline-none focus:border-sky-500">
+        </div>
+      </div>
+
+      <button id="btn-finalizar" onclick="finalizarDevocional()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg shadow-emerald-500/20">
+        Completar Devocional
+      </button>
+    </div>
+
+    <!-- PASO 6: CIERRE & RACHA -->
+    <div id="step-6" class="step-pane hidden flex flex-col items-center text-center my-auto space-y-6">
+      <div class="text-6xl animate-bounce" id="arbol-emoji">🌳</div>
+      <h2 class="text-2xl font-bold text-white">¡Devocional Completado!</h2>
+      <p id="arbol-txt" class="text-sm text-sky-300 font-medium"></p>
+
+      <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-4 w-full">
+        <p class="text-xs text-slate-400 uppercase tracking-wider">Racha Consecutiva</p>
+        <p id="racha-val" class="text-3xl font-extrabold text-amber-400 mt-1">1 día</p>
+      </div>
+
+      <p class="text-xs text-slate-400">"Permanezcan en mí, y yo en ustedes... el que permanece en mí da mucho fruto." — Juan 15:4-5</p>
+      
+      <button onclick="tg ? tg.close() : alert('¡Dios te bendiga hoy!')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3 rounded-xl border border-slate-700">
+        Cerrar
+      </button>
+    </div>
+
+  </div>
+
+</body>
+</html>
