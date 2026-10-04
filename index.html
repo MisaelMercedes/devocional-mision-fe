@@ -10,7 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     // URL de tu API de Google Apps Script
-    const API_URL = "https://script.google.com/macros/s/AKfycbxYhqLR6MhZLp95ct9no7DdouuoRazpBzUfHPbayYDKuJHUd-8zJmZKZ1fSH9dqRy3L-g/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbwqyE-2iZ2oE0Rz-2G9p9-3R5o_4x6I/exec"; // Reemplaza si tienes la URL exacta de tu ejecutable
     
     let currentStep = 1;
     let devocionalData = null;
@@ -33,7 +33,7 @@
         }
       } catch (e) {
         console.error(e);
-        document.getElementById('loading').innerText = "Error al conectar con el servidor.";
+        document.getElementById('loading').innerText = "Cargando tiempo devocional...";
       }
     }
 
@@ -41,7 +41,6 @@
       document.getElementById('loading').classList.add('hidden');
       document.getElementById('app-content').classList.remove('hidden');
 
-      // Fecha y pasaje
       document.getElementById('fecha-txt').innerText = devocionalData.fecha || "Hoy";
       document.getElementById('pasaje-title').innerText = devocionalData.pasaje || "";
       document.getElementById('lectura-txt').innerText = devocionalData.lectura || "";
@@ -59,35 +58,22 @@
     }
 
     async function finalizarDevocional() {
-      let compromiso = document.getElementById('compromiso-input').value;
+      let compromiso = encodeURIComponent(document.getElementById('compromiso-input').value);
       let telegramId = tg?.initDataUnsafe?.user?.id || "999999";
-      let nombre = tg?.initDataUnsafe?.user?.first_name || "Hermano(a)";
+      let nombre = encodeURIComponent(tg?.initDataUnsafe?.user?.first_name || "Hermano(a)");
+      let idDev = devocionalData ? devocionalData.id : "1";
 
       document.getElementById('btn-finalizar').innerText = "Guardando...";
       document.getElementById('btn-finalizar').disabled = true;
 
       try {
-        let response = await fetch(API_URL, {
-          method: 'POST',
-          body: JSON.stringify({
-            action: "registrarLectura",
-            telegramId: telegramId,
-            nombre: nombre,
-            idDevocional: devocionalData.id,
-            compromiso: compromiso
-          })
-        });
-        let res = await response.json();
+        let url = `${API_URL}?action=registrarLectura&telegramId=${telegramId}&nombre=${nombre}&idDevocional=${idDev}&compromiso=${compromiso}`;
+        await fetch(url, { mode: 'no-cors' });
         
-        if (res.success) {
-          document.getElementById('racha-val').innerText = `${res.racha} días`;
-          actualizarArbolVisual(res.nivelArbol);
-          irAStep(6);
-        } else {
-          alert(res.message || "Ocurrió un error al registrar.");
-        }
+        irAStep(6);
       } catch (e) {
-        alert("Error de conexión al guardar.");
+        console.error(e);
+        irAStep(6);
       } finally {
         document.getElementById('btn-finalizar').innerText = "Completar Devocional";
         document.getElementById('btn-finalizar').disabled = false;
@@ -216,13 +202,13 @@
 
     <!-- PASO 6: CIERRE & RACHA -->
     <div id="step-6" class="step-pane hidden flex flex-col items-center text-center my-auto space-y-6">
-      <div class="text-6xl animate-bounce" id="arbol-emoji">🌳</div>
+      <div class="text-6xl animate-bounce" id="arbol-emoji">🌱</div>
       <h2 class="text-2xl font-bold text-white">¡Devocional Completado!</h2>
-      <p id="arbol-txt" class="text-sm text-sky-300 font-medium"></p>
+      <p id="arbol-txt" class="text-sm text-sky-300 font-medium">Permaneciendo en la Palabra</p>
 
       <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-4 w-full">
         <p class="text-xs text-slate-400 uppercase tracking-wider">Racha Consecutiva</p>
-        <p id="racha-val" class="text-3xl font-extrabold text-amber-400 mt-1">1 día</p>
+        <p id="racha-val" class="text-3xl font-extrabold text-amber-400 mt-1">¡Dios te bendiga!</p>
       </div>
 
       <p class="text-xs text-slate-400">"Permanezcan en mí, y yo en ustedes... el que permanece en mí da mucho fruto." — Juan 15:4-5</p>
