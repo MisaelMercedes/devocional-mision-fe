@@ -98,7 +98,7 @@
     function finalizarDevocional() {
       let compromiso = encodeURIComponent(document.getElementById('compromiso-input').value);
       let telegramId = tg?.initDataUnsafe?.user?.id || "999999";
-      let nombre = encodeURIComponent(tg?.initDataUnsafe?.user?.first_name || "Hermano");
+      let nombre = encodeURIComponent(tg?.initDataUnsafe?.user?.first_name || "Hermano(a)");
       let idDev = devocionalData ? (devocionalData.id || devocionalData.id_devocional) : "1";
 
       document.getElementById('btn-finalizar').innerText = "Guardando...";
@@ -106,16 +106,37 @@
 
       let url = `${API_URL}?action=registrarLectura&telegramId=${telegramId}&nombre=${nombre}&idDevocional=${idDev}&compromiso=${compromiso}`;
       
-      let img = new Image();
-      img.src = url;
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('btn-finalizar').innerText = "Completar Devocional";
+          document.getElementById('btn-finalizar').disabled = false;
 
-      setTimeout(() => {
-        document.getElementById('btn-finalizar').innerText = "Completar Devocional";
-        document.getElementById('btn-finalizar').disabled = false;
-        irAStep(6);
-      }, 1000);
+          if (data && data.success) {
+            let racha = data.racha || 1;
+            let nivel = data.nivelArbol || 1;
+            
+            let emojis = { 1: "🌱", 2: "🌿", 3: "🌸", 4: "🌳🍎" };
+            let titulos = { 
+              1: "Brote: Iniciando el hábito", 
+              2: "Arbolito: Constante en la Palabra", 
+              3: "En Flor: Creciendo firmemente", 
+              4: "Frutuoso: Abundante en Dios" 
+            };
+
+            document.getElementById('arbol-emoji').innerText = emojis[nivel] || "🌱";
+            document.getElementById('arbol-txt').innerText = titulos[nivel] || "Permaneciendo en la Palabra";
+            document.getElementById('racha-val').innerText = `🔥 ${racha} ${racha === 1 ? 'DÍA' : 'DÍAS'}`;
+          }
+          irAStep(6);
+        })
+        .catch(err => {
+          console.error("Error al registrar:", err);
+          document.getElementById('btn-finalizar').innerText = "Completar Devocional";
+          document.getElementById('btn-finalizar').disabled = false;
+          irAStep(6);
+        });
     }
-
     document.addEventListener("DOMContentLoaded", cargarDevocional);
   </script>
 </head>
