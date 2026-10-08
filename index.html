@@ -54,11 +54,14 @@
       document.getElementById('fecha-txt').innerText = devocionalData.fecha || "Hoy";
       document.getElementById('pasaje-title').innerText = devocionalData.pasaje || devocionalData.pasaje_clave || "";
       
-      // Formatear versículos para resaltar los números
+      // Formatear versículos por separado con espacio entre ellos
       let textoLectura = devocionalData.lectura || devocionalData.texto_lectura || "";
+      
       let lecturaFormateada = textoLectura
-        .replace(/(\d+)\.\s*/g, '<br><strong class="text-sky-400">$1.</strong> ')
-        .replace(/\n/g, '<br>');
+        // Detecta cualquier número de versículo al inicio o en medio del texto y lo separa en un bloque propio
+        .replace(/(?:^|\s)(\d+)\s+/g, '<div class="mb-3"><strong class="text-sky-400 font-bold">$1.</strong> ')
+        .replace(/<\/div>/g, '') // Limpieza previa si existiera
+        + '</div>'; // Cierra el último bloque
 
       document.getElementById('lectura-txt').innerHTML = lecturaFormateada;
       document.getElementById('reflexion-txt').innerText = devocionalData.reflexion || "";
