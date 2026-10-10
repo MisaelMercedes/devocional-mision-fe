@@ -146,6 +146,8 @@
       document.getElementById('autoanalisis-txt').innerText = devocionalData.autoanalisis || "";
       document.getElementById('oracion-txt').innerText = devocionalData.oracion || devocionalData.puntos_oracion || "";
       document.getElementById('desafio-txt').innerText = devocionalData.desafio || devocionalData.desafio_dia || "";
+      
+      irAStep(1);
     }
 
     function renderHistorialSelector() {
@@ -181,6 +183,33 @@
       document.getElementById(`step-${step}`).classList.remove('hidden');
       window.scrollTo(0,0);
       currentStep = step;
+
+      const bottomControls = document.getElementById('bottom-controls');
+      const btnNextAction = document.getElementById('btn-next-action');
+
+      // 1. Mostrar/Ocultar barra inferior según el paso
+      if (step === 1 || step === 6) {
+        bottomControls.classList.add('hidden');
+      } else {
+        bottomControls.classList.remove('hidden');
+      }
+
+      // 2. Ajustar estilo y texto del botón principal en el Paso 5 (Guardar)
+      if (step === 5) {
+        btnNextAction.className = "flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2 px-3 rounded-xl transition shadow-md shadow-emerald-500/20 text-xs text-center flex items-center justify-center space-x-1";
+        btnNextAction.innerHTML = '<span id="btn-next-text">Completar Devocional</span> <span>✅</span>';
+      } else {
+        btnNextAction.className = "flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1";
+        btnNextAction.innerHTML = '<span id="btn-next-text">Continuar</span> <span>➡️</span>';
+      }
+    }
+
+    function ejecutarAccionSiguiente() {
+      if (currentStep === 5) {
+        finalizarDevocional();
+      } else {
+        irAStep(currentStep + 1);
+      }
     }
 
     function finalizarDevocional() {
@@ -189,16 +218,16 @@
       let nombre = encodeURIComponent(tg?.initDataUnsafe?.user?.first_name || "Hermano(a)");
       let idDev = devocionalData ? (devocionalData.id || devocionalData.id_devocional) : "1";
 
-      document.getElementById('btn-finalizar').innerText = "Guardando...";
-      document.getElementById('btn-finalizar').disabled = true;
+      const btnNextAction = document.getElementById('btn-next-action');
+      btnNextAction.innerText = "Guardando...";
+      btnNextAction.disabled = true;
 
       let url = `${API_URL}?action=registrarLectura&telegramId=${telegramId}&nombre=${nombre}&idDevocional=${idDev}&compromiso=${compromiso}`;
       
       fetch(url)
         .then(res => res.json())
         .then(data => {
-          document.getElementById('btn-finalizar').innerText = "Completar Devocional";
-          document.getElementById('btn-finalizar').disabled = false;
+          btnNextAction.disabled = false;
 
           if (data && data.success) {
             let racha = data.racha || 1;
@@ -220,8 +249,7 @@
         })
         .catch(err => {
           console.error("Error al registrar:", err);
-          document.getElementById('btn-finalizar').innerText = "Completar Devocional";
-          document.getElementById('btn-finalizar').disabled = false;
+          btnNextAction.disabled = false;
           irAStep(6);
         });
     }
@@ -248,7 +276,7 @@
   <!-- CONTENIDO PRINCIPAL -->
   <div id="app-content" class="hidden flex-1 flex flex-col justify-between h-full">
 
-    <!-- ÁREA DE PASOS DE LECTURA (Alineados al tope para aprovechar espacio) -->
+    <!-- ÁREA DE PASOS DE LECTURA -->
     <div class="flex-1 overflow-y-auto pb-3">
 
       <!-- PASO 1: INICIO -->
@@ -310,7 +338,7 @@
         </div>
       </div>
 
-      <!-- PASO 4: PUNTOS PARA ORAR (Alineado al tope) -->
+      <!-- PASO 4: PUNTOS PARA ORAR -->
       <div id="step-4" class="step-pane hidden space-y-3 pt-1">
         <div class="space-y-0.5">
           <span class="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 3 de 4</span>
@@ -336,7 +364,7 @@
           <p id="desafio-txt" class="readable-text text-slate-800 dark:text-slate-100 font-medium"></p>
           <div>
             <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5">Tu compromiso para hoy (opcional):</label>
-            <input id="compromiso-input" type="text" placeholder="Ej. Llamaré a mi hermano..." class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+            <input id="compromiso-input" type="text" placeholder="Ej. Dejar mis decisiones en las manos de Dios" class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
           </div>
         </div>
       </div>
@@ -361,16 +389,16 @@
 
     </div>
 
-    <!-- BARRA DE NAVEGACIÓN Y AJUSTES INTEGRADA AL PIE (Solo visible en pasos de lectura 2, 3, 4, 5) -->
-    <div id="bottom-controls" class="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2">
+    <!-- BARRA DE NAVEGACIÓN Y AJUSTES INTEGRADA AL PIE (Oculta en paso 1 y 6) -->
+    <div id="bottom-controls" class="hidden pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2">
       <div class="flex items-center justify-between gap-2">
         
-        <!-- Botón Anterior Sutil / Compacto -->
+        <!-- Botón Anterior Sutil -->
         <button onclick="irAStep(currentStep - 1)" class="px-3 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold rounded-xl transition text-xs flex items-center">
           ⬅️
         </button>
 
-        <!-- Micro Controles de Accesibilidad integrados al medio -->
+        <!-- Micro Controles de Accesibilidad -->
         <div class="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800/80 px-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700/50">
           <button onclick="changeFontSize(-1)" class="px-1.5 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-sky-500">A-</button>
           <span class="text-slate-300 dark:text-slate-700">|</span>
@@ -382,8 +410,8 @@
           </button>
         </div>
 
-        <!-- Botón Principal / Continuar (Resaltado) -->
-        <button id="btn-next-action" onclick="if(currentStep === 5) { finalizarDevocional(); } else { irAStep(currentStep + 1); }" class="flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1">
+        <!-- Botón Principal (Continuar o Completar Devocional) -->
+        <button id="btn-next-action" onclick="ejecutarAccionSiguiente()" class="flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1">
           <span id="btn-next-text">Continuar</span>
           <span>➡️</span>
         </button>
