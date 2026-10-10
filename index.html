@@ -15,8 +15,8 @@
   </script>
   <style>
     /* Clases dinámicas de tamaño de fuente */
-    .font-size-sm .readable-text { font-size: 0.875rem; line-height: 1.5rem; }
-    .font-size-md .readable-text { font-size: 1.05rem; line-height: 1.75rem; }
+    .font-size-sm .readable-text { font-size: 0.9rem; line-height: 1.5rem; }
+    .font-size-md .readable-text { font-size: 1.08rem; line-height: 1.75rem; }
     .font-size-lg .readable-text { font-size: 1.25rem; line-height: 2rem; }
   </style>
   <script>
@@ -32,9 +32,8 @@
       tg.expand();
     }
 
-    // Funciones de Preferencias (Tema y Tipografía)
+    // Preferencias (Tema y Tipografía)
     function aplicarPreferencias() {
-      // Tema Oscuro / Claro
       const theme = localStorage.getItem('mf_theme') || 'dark';
       if (theme === 'dark') {
         document.documentElement.classList.add('dark');
@@ -42,7 +41,6 @@
         document.documentElement.classList.remove('dark');
       }
 
-      // Tamaño de Letra (sm, md, lg)
       const fontSize = localStorage.getItem('mf_font_size') || 'md';
       setDynamicFontSize(fontSize);
     }
@@ -79,7 +77,6 @@
       const fechaHoy = obtenerFechaHoy();
       const claveCache = `mf_devocional_${fechaHoy}`;
 
-      // 1. Intentar cargar desde caché local
       const devocionalCached = localStorage.getItem(claveCache);
       if (devocionalCached) {
         try {
@@ -94,7 +91,6 @@
         }
       }
 
-      // 2. Si no hay caché, hacer petición con reintentos
       let exito = false;
       let intentos = 0;
       const maxIntentos = 3;
@@ -108,10 +104,7 @@
           if (res && res.success) {
             devocionalData = res.devocional;
             historialDevocionales = res.historial || [];
-            
-            // Guardar en caché local
             localStorage.setItem(claveCache, JSON.stringify(res));
-            
             renderDevocional();
             renderHistorialSelector();
             exito = true;
@@ -239,7 +232,7 @@
     });
   </script>
 </head>
-<body id="app-body" class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen font-sans flex flex-col justify-between p-4 max-w-md mx-auto transition-colors duration-200">
+<body id="app-body" class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen font-sans flex flex-col justify-between p-3 max-w-md mx-auto transition-colors duration-200">
 
   <!-- PANTALLA DE CARGA -->
   <div id="loading" class="flex-1 flex flex-col items-center justify-center text-center p-6 my-auto space-y-4">
@@ -253,163 +246,149 @@
   </div>
 
   <!-- CONTENIDO PRINCIPAL -->
-  <div id="app-content" class="hidden flex-1 flex flex-col justify-between">
+  <div id="app-content" class="hidden flex-1 flex flex-col justify-between h-full">
 
-    <!-- BARRA CONTROLES ACCESIBILIDAD (Modo Claro/Oscuro y Tamaño Letra) -->
-    <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-200 dark:border-slate-800 text-xs">
-      <div class="flex items-center space-x-1">
-        <span class="text-slate-500 dark:text-slate-400 font-medium mr-1">Texto:</span>
-        <button onclick="changeFontSize(-1)" class="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded font-bold hover:bg-slate-300 dark:hover:bg-slate-700">A-</button>
-        <button onclick="changeFontSize(1)" class="px-2 py-1 bg-slate-200 dark:bg-slate-800 rounded font-bold hover:bg-slate-300 dark:hover:bg-slate-700">A+</button>
-      </div>
-      <button onclick="toggleTheme()" class="px-2.5 py-1 bg-slate-200 dark:bg-slate-800 rounded-lg flex items-center space-x-1 hover:bg-slate-300 dark:hover:bg-slate-700">
-        <span class="dark:hidden">🌙 Oscuro</span>
-        <span class="hidden dark:inline">☀️ Claro</span>
-      </button>
-    </div>
+    <!-- ÁREA DE PASOS DE LECTURA (Alineados al tope para aprovechar espacio) -->
+    <div class="flex-1 overflow-y-auto pb-3">
 
-    <!-- PASO 1: INICIO -->
-    <div id="step-1" class="step-pane flex flex-col items-center text-center my-auto space-y-4">
-      <img src="logomisiónfe.webp" alt="Misión Fe" class="w-24 h-24 object-contain mx-auto mb-1">
+      <!-- PASO 1: INICIO -->
+      <div id="step-1" class="step-pane flex flex-col items-center text-center space-y-4 pt-2">
+        <img src="logomisiónfe.webp" alt="Misión Fe" class="w-20 h-20 object-contain mx-auto">
 
-      <div class="bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-300 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide">
-        MISIÓN FE • DEVOCIONAL DIARIO
-      </div>
-      <h1 class="text-3xl font-bold tracking-tight">Tiempo con Dios</h1>
-      <p id="fecha-txt" class="text-slate-500 dark:text-slate-400 text-sm"></p>
-      
-      <div class="p-6 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-full space-y-3 shadow-sm">
-        <span class="text-4xl">📖</span>
-        <h2 id="pasaje-title" class="text-xl font-bold text-sky-600 dark:text-sky-400"></h2>
-        <p class="text-xs text-slate-500 dark:text-slate-400">Prepara tu corazón para escuchar la voz del Señor hoy.</p>
-      </div>
-
-      <!-- SELECTOR PARA PONERSE AL DÍA -->
-      <div id="historial-container" class="hidden w-full bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/40 rounded-xl p-3 text-left space-y-1">
-        <label class="block text-[11px] font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
-          🔄 ¿Te perdiste una lectura? Pónte al día:
-        </label>
-        <select id="select-devocional" onchange="cambiarDevocionalSeleccionado()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-sky-500">
-        </select>
-      </div>
-
-      <button onclick="irAStep(2)" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg shadow-sky-500/20">
-        Iniciar la lectura
-      </button>
-    </div>
-
-    <!-- PASO 2: LECTURA BÍBLICA -->
-    <div id="step-2" class="step-pane hidden space-y-5">
-      <div class="space-y-1">
-        <span class="text-xs text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 1 de 4</span>
-        <h2 class="text-2xl font-bold">Lectura Bíblica</h2>
-      </div>
-      
-      <div class="p-5 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm max-h-[60vh] overflow-y-auto">
-        <p id="lectura-txt" class="readable-text whitespace-pre-line text-slate-700 dark:text-slate-200"></p>
-      </div>
-
-      <div class="flex space-x-3">
-        <button onclick="irAStep(1)" class="w-1/3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold py-3.5 rounded-xl transition text-sm">
-          ⬅️ Anterior
-        </button>
-        <button onclick="irAStep(3)" class="w-2/3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-3.5 rounded-xl transition">
-          Continuar ➡️
-        </button>
-      </div>
-    </div>
-
-    <!-- PASO 3: DEVOCIONAL & REFLEXIÓN -->
-    <div id="step-3" class="step-pane hidden space-y-5">
-      <div class="space-y-1">
-        <span class="text-xs text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 2 de 4</span>
-        <h2 class="text-2xl font-bold">Reflexión</h2>
-      </div>
-      
-      <div class="p-5 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-4 shadow-sm">
-        <p id="reflexion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
+        <div class="bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-300 px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-wide">
+          MISIÓN FE • DEVOCIONAL DIARIO
+        </div>
+        <h1 class="text-2xl font-bold tracking-tight">Tiempo con Dios</h1>
+        <p id="fecha-txt" class="text-slate-500 dark:text-slate-400 text-xs"></p>
         
-        <div class="p-3.5 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/50 rounded-xl">
-          <p class="text-xs font-semibold text-sky-700 dark:text-sky-300 mb-1">🤔 Autoanálisis:</p>
-          <p id="autoanalisis-txt" class="readable-text text-slate-600 dark:text-slate-300 italic"></p>
+        <div class="p-5 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-full space-y-2 shadow-sm">
+          <span class="text-3xl">📖</span>
+          <h2 id="pasaje-title" class="text-lg font-bold text-sky-600 dark:text-sky-400"></h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Prepara tu corazón para escuchar la voz del Señor hoy.</p>
+        </div>
+
+        <!-- SELECTOR PARA PONERSE AL DÍA -->
+        <div id="historial-container" class="hidden w-full bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/40 rounded-xl p-2.5 text-left space-y-1">
+          <label class="block text-[10px] font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+            🔄 ¿Te perdiste una lectura? Pónte al día:
+          </label>
+          <select id="select-devocional" onchange="cambiarDevocionalSeleccionado()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-sky-500">
+          </select>
+        </div>
+
+        <button onclick="irAStep(2)" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-sky-500/20 text-sm">
+          Iniciar la lectura
+        </button>
+      </div>
+
+      <!-- PASO 2: LECTURA BÍBLICA -->
+      <div id="step-2" class="step-pane hidden space-y-3 pt-1">
+        <div class="space-y-0.5">
+          <span class="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 1 de 4</span>
+          <h2 class="text-xl font-bold">Lectura Bíblica</h2>
+        </div>
+        
+        <div class="p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm max-h-[68vh] overflow-y-auto">
+          <p id="lectura-txt" class="readable-text whitespace-pre-line text-slate-700 dark:text-slate-200"></p>
         </div>
       </div>
 
-      <div class="flex space-x-3">
-        <button onclick="irAStep(2)" class="w-1/3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold py-3.5 rounded-xl transition text-sm">
-          ⬅️ Anterior
-        </button>
-        <button onclick="irAStep(4)" class="w-2/3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-3.5 rounded-xl transition">
-          Continuar ➡️
-        </button>
-      </div>
-    </div>
-
-    <!-- PASO 4: PUNTOS PARA ORAR -->
-    <div id="step-4" class="step-pane hidden space-y-5">
-      <div class="space-y-1">
-        <span class="text-xs text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 3 de 4</span>
-        <h2 class="text-2xl font-bold">Puntos de Oración</h2>
-      </div>
-      
-      <div class="p-5 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm">
-        <div class="flex items-start space-x-3">
-          <span class="text-xl">🙏</span>
-          <p id="oracion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
+      <!-- PASO 3: DEVOCIONAL & REFLEXIÓN -->
+      <div id="step-3" class="step-pane hidden space-y-3 pt-1">
+        <div class="space-y-0.5">
+          <span class="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 2 de 4</span>
+          <h2 class="text-xl font-bold">Reflexión</h2>
+        </div>
+        
+        <div class="p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[68vh] overflow-y-auto">
+          <p id="reflexion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
+          
+          <div class="p-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/50 rounded-xl">
+            <p class="text-xs font-semibold text-sky-700 dark:text-sky-300 mb-1">🤔 Autoanálisis:</p>
+            <p id="autoanalisis-txt" class="readable-text text-slate-600 dark:text-slate-300 italic"></p>
+          </div>
         </div>
       </div>
 
-      <div class="flex space-x-3">
-        <button onclick="irAStep(3)" class="w-1/3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold py-3.5 rounded-xl transition text-sm">
-          ⬅️ Anterior
-        </button>
-        <button onclick="irAStep(5)" class="w-2/3 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-3.5 rounded-xl transition">
-          Continuar ➡️
-        </button>
-      </div>
-    </div>
-
-    <!-- PASO 5: LLÉVALO A LA VIDA -->
-    <div id="step-5" class="step-pane hidden space-y-5">
-      <div class="space-y-1">
-        <span class="text-xs text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 4 de 4</span>
-        <h2 class="text-2xl font-bold">Llévalo a la Vida</h2>
-      </div>
-      
-      <div class="p-5 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-4 shadow-sm">
-        <p id="desafio-txt" class="readable-text text-slate-800 dark:text-slate-100 font-medium"></p>
-        <div>
-          <label class="block text-xs text-slate-500 dark:text-slate-400 mb-2">Tu compromiso para hoy (opcional):</label>
-          <input id="compromiso-input" type="text" placeholder="Ej. Llamaré a mi hermano para pedirle perdón..." class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-sky-500">
+      <!-- PASO 4: PUNTOS PARA ORAR (Alineado al tope) -->
+      <div id="step-4" class="step-pane hidden space-y-3 pt-1">
+        <div class="space-y-0.5">
+          <span class="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 3 de 4</span>
+          <h2 class="text-xl font-bold">Puntos de Oración</h2>
+        </div>
+        
+        <div class="p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[68vh] overflow-y-auto">
+          <div class="flex items-start space-x-2.5">
+            <span class="text-lg">🙏</span>
+            <p id="oracion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
+          </div>
         </div>
       </div>
 
-      <div class="flex space-x-3">
-        <button onclick="irAStep(4)" class="w-1/3 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold py-3.5 rounded-xl transition text-sm">
-          ⬅️ Anterior
-        </button>
-        <button id="btn-finalizar" onclick="finalizarDevocional()" class="w-2/3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3.5 rounded-xl transition shadow-lg shadow-emerald-500/20">
-          Completar Devocional
+      <!-- PASO 5: LLÉVALO A LA VIDA -->
+      <div id="step-5" class="step-pane hidden space-y-3 pt-1">
+        <div class="space-y-0.5">
+          <span class="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 4 de 4</span>
+          <h2 class="text-xl font-bold">Llévalo a la Vida</h2>
+        </div>
+        
+        <div class="p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[68vh] overflow-y-auto">
+          <p id="desafio-txt" class="readable-text text-slate-800 dark:text-slate-100 font-medium"></p>
+          <div>
+            <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5">Tu compromiso para hoy (opcional):</label>
+            <input id="compromiso-input" type="text" placeholder="Ej. Llamaré a mi hermano..." class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-sky-500">
+          </div>
+        </div>
+      </div>
+
+      <!-- PASO 6: CIERRE & RACHA -->
+      <div id="step-6" class="step-pane hidden flex flex-col items-center text-center space-y-5 pt-4">
+        <div class="text-5xl animate-bounce" id="arbol-emoji">🌱</div>
+        <h2 class="text-2xl font-bold">¡Devocional Completado!</h2>
+        <p id="arbol-txt" class="text-xs text-sky-600 dark:text-sky-300 font-medium">Permaneciendo en la Palabra</p>
+
+        <div class="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 w-full shadow-sm">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-wider">Racha Consecutiva</p>
+          <p id="racha-val" class="text-2xl font-extrabold text-amber-500 dark:text-amber-400 mt-0.5">¡Dios te bendiga!</p>
+        </div>
+
+        <p class="text-xs text-slate-500 dark:text-slate-400">"Permanezcan en mí, y yo en ustedes... el que permanece en mí da mucho fruto." — Juan 15:4-5</p>
+        
+        <button onclick="tg ? tg.close() : alert('¡Dios te bendiga hoy!')" class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 text-sm">
+          Cerrar
         </button>
       </div>
+
     </div>
 
-    <!-- PASO 6: CIERRE & RACHA -->
-    <div id="step-6" class="step-pane hidden flex flex-col items-center text-center my-auto space-y-6">
-      <div class="text-6xl animate-bounce" id="arbol-emoji">🌱</div>
-      <h2 class="text-2xl font-bold">¡Devocional Completado!</h2>
-      <p id="arbol-txt" class="text-sm text-sky-600 dark:text-sky-300 font-medium">Permaneciendo en la Palabra</p>
+    <!-- BARRA DE NAVEGACIÓN Y AJUSTES INTEGRADA AL PIE (Solo visible en pasos de lectura 2, 3, 4, 5) -->
+    <div id="bottom-controls" class="pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2">
+      <div class="flex items-center justify-between gap-2">
+        
+        <!-- Botón Anterior Sutil / Compacto -->
+        <button onclick="irAStep(currentStep - 1)" class="px-3 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold rounded-xl transition text-xs flex items-center">
+          ⬅️
+        </button>
 
-      <div class="bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 w-full shadow-sm">
-        <p class="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Racha Consecutiva</p>
-        <p id="racha-val" class="text-3xl font-extrabold text-amber-500 dark:text-amber-400 mt-1">¡Dios te bendiga!</p>
+        <!-- Micro Controles de Accesibilidad integrados al medio -->
+        <div class="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800/80 px-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700/50">
+          <button onclick="changeFontSize(-1)" class="px-1.5 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-sky-500">A-</button>
+          <span class="text-slate-300 dark:text-slate-700">|</span>
+          <button onclick="changeFontSize(1)" class="px-1.5 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-sky-500">A+</button>
+          <span class="text-slate-300 dark:text-slate-700">|</span>
+          <button onclick="toggleTheme()" class="px-1 py-0.5 text-xs">
+            <span class="dark:hidden">🌙</span>
+            <span class="hidden dark:inline">☀️</span>
+          </button>
+        </div>
+
+        <!-- Botón Principal / Continuar (Resaltado) -->
+        <button id="btn-next-action" onclick="if(currentStep === 5) { finalizarDevocional(); } else { irAStep(currentStep + 1); }" class="flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1">
+          <span id="btn-next-text">Continuar</span>
+          <span>➡️</span>
+        </button>
+
       </div>
-
-      <p class="text-xs text-slate-500 dark:text-slate-400">"Permanezcan en mí, y yo en ustedes... el que permanece en mí da mucho fruto." — Juan 15:4-5</p>
-      
-      <button onclick="tg ? tg.close() : alert('¡Dios te bendiga hoy!')" class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold py-3 rounded-xl border border-slate-300 dark:border-slate-700">
-        Cerrar
-      </button>
     </div>
 
   </div>
