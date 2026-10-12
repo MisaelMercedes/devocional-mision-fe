@@ -72,6 +72,35 @@
       return hoy.toISOString().split('T')[0];
     }
 
+    // Formateador amigable de fecha en español (ej: Sábado, 10 de octubre de 2026)
+    function formatearFechaLarga(fechaStr) {
+      if (!fechaStr) return "";
+      try {
+        const [anio, mes, dia] = fechaStr.split('-').map(Number);
+        const fechaObj = new Date(anio, mes - 1, dia);
+        const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        let texto = fechaObj.toLocaleDateString('es-ES', opciones);
+        // Mayúscula inicial en el día de la semana
+        return texto.charAt(0).toUpperCase() + texto.slice(1);
+      } catch (e) {
+        return fechaStr;
+      }
+    }
+
+    // Formateador corto para historial (ej: Sábado 10/10/26)
+    function formatearFechaCorta(fechaStr) {
+      if (!fechaStr) return "";
+      try {
+        const [anio, mes, dia] = fechaStr.split('-').map(Number);
+        const fechaObj = new Date(anio, mes - 1, dia);
+        const opciones = { weekday: 'long', day: '2-digit', month: '2-digit', year: '2-digit' };
+        let texto = fechaObj.toLocaleDateString('es-ES', opciones);
+        return texto.charAt(0).toUpperCase() + texto.slice(1);
+      } catch (e) {
+        return fechaStr;
+      }
+    }
+
     // Carga de Devocional con Caché y Reintentos
     async function cargarDevocional() {
       const fechaHoy = obtenerFechaHoy();
@@ -133,8 +162,12 @@
       document.getElementById('loading').classList.add('hidden');
       document.getElementById('app-content').classList.remove('hidden');
 
-      document.getElementById('fecha-txt').innerText = devocionalData.fecha || "Hoy";
-      document.getElementById('pasaje-title').innerText = devocionalData.pasaje || devocionalData.pasaje_clave || "";
+      const fechaCruda = devocionalData.fecha || "";
+      document.getElementById('fecha-txt').innerText = formatearFechaLarga(fechaCruda);
+      
+      const pasajeTexto = devocionalData.pasaje || devocionalData.pasaje_clave || "";
+      document.getElementById('pasaje-title').innerText = pasajeTexto;
+      document.getElementById('lectura-titulo-cita').innerText = pasajeTexto ? `: ${pasajeTexto}` : "";
       
       let textoLectura = devocionalData.lectura || devocionalData.texto_lectura || "";
       let lecturaFormateada = textoLectura
@@ -159,7 +192,8 @@
         historialDevocionales.forEach(item => {
           let option = document.createElement('option');
           option.value = item.id;
-          option.textContent = `${item.fecha} - ${item.pasaje || item.pasaje_clave}`;
+          let fechaCorta = formatearFechaCorta(item.fecha);
+          option.textContent = `${fechaCorta} - ${item.pasaje || item.pasaje_clave}`;
           if (devocionalData && item.id === devocionalData.id) {
             option.selected = true;
           }
@@ -187,14 +221,12 @@
       const bottomControls = document.getElementById('bottom-controls');
       const btnNextAction = document.getElementById('btn-next-action');
 
-      // 1. Mostrar/Ocultar barra inferior según el paso
       if (step === 1 || step === 6) {
         bottomControls.classList.add('hidden');
       } else {
         bottomControls.classList.remove('hidden');
       }
 
-      // 2. Ajustar estilo y texto del botón principal en el Paso 5 (Guardar)
       if (step === 5) {
         btnNextAction.className = "flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2 px-3 rounded-xl transition shadow-md shadow-emerald-500/20 text-xs text-center flex items-center justify-center space-x-1";
         btnNextAction.innerHTML = '<span id="btn-next-text">Completar Devocional</span> <span>✅</span>';
@@ -264,7 +296,7 @@
 
   <!-- PANTALLA DE CARGA -->
   <div id="loading" class="flex-1 flex flex-col items-center justify-center text-center p-6 my-auto space-y-4">
-    <img src="logomisiónfe.webp" alt="Misión Fe" class="w-28 h-28 object-contain animate-pulse">
+    <img src="logo sin fondo degradado.png" alt="Misión Fe" class="w-28 h-28 object-contain animate-pulse">
     <h2 class="text-xl font-bold tracking-wide">Devocional Misión Fe</h2>
     <p id="loading-text" class="text-xs text-sky-600 dark:text-sky-400 font-medium animate-pulse">Preparando tu tiempo con Dios...</p>
     
@@ -281,13 +313,13 @@
 
       <!-- PASO 1: INICIO -->
       <div id="step-1" class="step-pane flex flex-col items-center text-center space-y-4 pt-2">
-        <img src="logomisiónfe.webp" alt="Misión Fe" class="w-20 h-20 object-contain mx-auto">
+        <img src="logo sin fondo degradado.png" alt="Misión Fe" class="w-20 h-20 object-contain mx-auto">
 
         <div class="bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-300 px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-wide">
           MISIÓN FE • DEVOCIONAL DIARIO
         </div>
         <h1 class="text-2xl font-bold tracking-tight">Tiempo con Dios</h1>
-        <p id="fecha-txt" class="text-slate-500 dark:text-slate-400 text-xs"></p>
+        <p id="fecha-txt" class="text-sky-600 dark:text-sky-400 font-bold text-sm tracking-wide"></p>
         
         <div class="p-5 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/50 w-full space-y-2 shadow-sm">
           <span class="text-3xl">📖</span>
@@ -295,10 +327,11 @@
           <p class="text-xs text-slate-500 dark:text-slate-400">Prepara tu corazón para escuchar la voz del Señor hoy.</p>
         </div>
 
-        <!-- SELECTOR PARA PONERSE AL DÍA -->
+        <!-- SELECTOR PARA PONERSE AL DIA -->
         <div id="historial-container" class="hidden w-full bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/40 rounded-xl p-2.5 text-left space-y-1">
-          <label class="block text-[10px] font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
-            🔄 ¿Te perdiste una lectura? Pónte al día:
+          <label class="block text-[10px] font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider flex justify-between items-center">
+            <span>Ponte al día con lecturas pasadas:</span>
+            <span>🔄</span>
           </label>
           <select id="select-devocional" onchange="cambiarDevocionalSeleccionado()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-sky-500">
           </select>
@@ -313,11 +346,18 @@
       <div id="step-2" class="step-pane hidden space-y-3 pt-1">
         <div class="space-y-0.5">
           <span class="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 1 de 4</span>
-          <h2 class="text-xl font-bold">Lectura Bíblica</h2>
+          <h2 class="text-xl font-bold flex items-center flex-wrap gap-1">
+            <span>Lectura Bíblica</span>
+            <span id="lectura-titulo-cita" class="text-sky-500 dark:text-sky-400 text-base font-semibold"></span>
+          </h2>
         </div>
         
-        <div class="p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm max-h-[68vh] overflow-y-auto">
-          <p id="lectura-txt" class="readable-text whitespace-pre-line text-slate-700 dark:text-slate-200"></p>
+        <div class="relative p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm max-h-[66vh] overflow-y-auto">
+          <p id="lectura-txt" class="readable-text whitespace-pre-line text-slate-700 dark:text-slate-200 pb-4"></p>
+          <!-- Indicador de desplazamiento inferior -->
+          <div class="sticky bottom-0 left-0 right-0 text-center py-1 bg-gradient-to-t from-white dark:from-slate-800 text-[11px] text-sky-500 dark:text-sky-400 font-medium animate-pulse pointer-events-none">
+            Desliza para leer más 🔽
+          </div>
         </div>
       </div>
 
@@ -389,16 +429,14 @@
 
     </div>
 
-    <!-- BARRA DE NAVEGACIÓN Y AJUSTES INTEGRADA AL PIE (Oculta en paso 1 y 6) -->
+    <!-- BARRA DE NAVEGACIÓN Y AJUSTES INTEGRADA AL PIE -->
     <div id="bottom-controls" class="hidden pt-2 border-t border-slate-200 dark:border-slate-800 space-y-2">
       <div class="flex items-center justify-between gap-2">
         
-        <!-- Botón Anterior Sutil -->
         <button onclick="irAStep(currentStep - 1)" class="px-3 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold rounded-xl transition text-xs flex items-center">
           ⬅️
         </button>
 
-        <!-- Micro Controles de Accesibilidad -->
         <div class="flex items-center space-x-1 bg-slate-100 dark:bg-slate-800/80 px-2 py-1 rounded-xl border border-slate-200 dark:border-slate-700/50">
           <button onclick="changeFontSize(-1)" class="px-1.5 py-0.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-sky-500">A-</button>
           <span class="text-slate-300 dark:text-slate-700">|</span>
@@ -410,7 +448,6 @@
           </button>
         </div>
 
-        <!-- Botón Principal (Continuar o Completar Devocional) -->
         <button id="btn-next-action" onclick="ejecutarAccionSiguiente()" class="flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1">
           <span id="btn-next-text">Continuar</span>
           <span>➡️</span>
