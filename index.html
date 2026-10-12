@@ -113,25 +113,33 @@
       }
     }
 
-    // Carga de Devocional con Caché y Reintentos
+    // Carga de Devocional con Caché Inteligente por Fecha y Reintentos
     async function cargarDevocional() {
       const fechaHoy = obtenerFechaHoy();
       const claveCache = `mf_devocional_${fechaHoy}`;
 
+      // 1. Intentar cargar desde caché local SOLO SI ES DE HOY
       const devocionalCached = localStorage.getItem(claveCache);
       if (devocionalCached) {
         try {
           const cachedData = JSON.parse(devocionalCached);
-          devocionalData = cachedData.devocional;
-          historialDevocionales = cachedData.historial || [];
-          renderDevocional();
-          renderHistorialSelector();
-          return;
+          // Validar que la fecha interna coincida con hoy
+          if (cachedData.devocional && cachedData.devocional.fecha === fechaHoy) {
+            devocionalData = cachedData.devocional;
+            historialDevocionales = cachedData.historial || [];
+            renderDevocional();
+            renderHistorialSelector();
+            return;
+          }
         } catch(e) {
           localStorage.removeItem(claveCache);
         }
       }
 
+      // Si la caché es antigua o no existe, la borramos por limpieza
+      localStorage.removeItem(claveCache);
+
+      // 2. Petición al backend con reintentos para traer el día actual
       let exito = false;
       let intentos = 0;
       const maxIntentos = 3;
@@ -145,7 +153,10 @@
           if (res && res.success) {
             devocionalData = res.devocional;
             historialDevocionales = res.historial || [];
+            
+            // Guardar en caché local el paquete del día actual
             localStorage.setItem(claveCache, JSON.stringify(res));
+            
             renderDevocional();
             renderHistorialSelector();
             exito = true;
