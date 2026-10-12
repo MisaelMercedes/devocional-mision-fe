@@ -18,6 +18,18 @@
     .font-size-sm .readable-text { font-size: 0.9rem; line-height: 1.5rem; }
     .font-size-md .readable-text { font-size: 1.08rem; line-height: 1.75rem; }
     .font-size-lg .readable-text { font-size: 1.25rem; line-height: 2rem; }
+    
+    /* Mostrar barra de scroll de forma visible y estilizada */
+    .scroll-container::-webkit-scrollbar {
+      width: 6px;
+    }
+    .scroll-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .scroll-container::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 10px;
+    }
   </style>
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzfMQWqV6tFmeu7TeDAVWAFOumw9cIsyIx9XBJFn6k5ehVPdWOy_4DqD_GzFNggSsEU5A/exec";
@@ -58,6 +70,9 @@
       const newSize = sizes[idx];
       localStorage.setItem('mf_font_size', newSize);
       setDynamicFontSize(newSize);
+      
+      // Recalcular indicadores de scroll al cambiar tamaño de letra
+      setTimeout(verificarScrollEnPasos, 100);
     }
 
     function setDynamicFontSize(size) {
@@ -72,7 +87,6 @@
       return hoy.toISOString().split('T')[0];
     }
 
-    // Formateador amigable de fecha en español (ej: Sábado, 10 de octubre de 2026)
     function formatearFechaLarga(fechaStr) {
       if (!fechaStr) return "";
       try {
@@ -80,14 +94,12 @@
         const fechaObj = new Date(anio, mes - 1, dia);
         const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         let texto = fechaObj.toLocaleDateString('es-ES', opciones);
-        // Mayúscula inicial en el día de la semana
         return texto.charAt(0).toUpperCase() + texto.slice(1);
       } catch (e) {
         return fechaStr;
       }
     }
 
-    // Formateador corto para historial (ej: Sábado 10/10/26)
     function formatearFechaCorta(fechaStr) {
       if (!fechaStr) return "";
       try {
@@ -234,6 +246,34 @@
         btnNextAction.className = "flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1";
         btnNextAction.innerHTML = '<span id="btn-next-text">Continuar</span> <span>➡️</span>';
       }
+
+      // Evaluar si es necesario mostrar el indicador de scroll
+      setTimeout(verificarScrollEnPasos, 100);
+    }
+
+    // Lógica para detectar si hay contenido extra que requiera scroll
+    function evaluarScroll(containerId, indicatorId) {
+      const container = document.getElementById(containerId);
+      const indicator = document.getElementById(indicatorId);
+      if (!container || !indicator) return;
+
+      // Si el contenido interno es más grande que el contenedor visible
+      if (container.scrollHeight - container.clientHeight > 15) {
+        // Verificar si el usuario ya llegó al final
+        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 15) {
+          indicator.classList.add('hidden');
+        } else {
+          indicator.classList.remove('hidden');
+        }
+      } else {
+        indicator.classList.add('hidden');
+      }
+    }
+
+    function verificarScrollEnPasos() {
+      if (currentStep === 2) evaluarScroll('lectura-box', 'scroll-ind-2');
+      if (currentStep === 3) evaluarScroll('reflexion-box', 'scroll-ind-3');
+      if (currentStep === 4) evaluarScroll('oracion-box', 'scroll-ind-4');
     }
 
     function ejecutarAccionSiguiente() {
@@ -296,7 +336,7 @@
 
   <!-- PANTALLA DE CARGA -->
   <div id="loading" class="flex-1 flex flex-col items-center justify-center text-center p-6 my-auto space-y-4">
-    <img src="logo sin fondo degradado.png" alt="Misión Fe" class="w-28 h-28 object-contain animate-pulse">
+    <img src="logo.png" alt="Misión Fe" class="w-28 h-28 object-contain animate-pulse">
     <h2 class="text-xl font-bold tracking-wide">Devocional Misión Fe</h2>
     <p id="loading-text" class="text-xs text-sky-600 dark:text-sky-400 font-medium animate-pulse">Preparando tu tiempo con Dios...</p>
     
@@ -313,7 +353,7 @@
 
       <!-- PASO 1: INICIO -->
       <div id="step-1" class="step-pane flex flex-col items-center text-center space-y-4 pt-2">
-        <img src="logo sin fondo degradado.png" alt="Misión Fe" class="w-20 h-20 object-contain mx-auto">
+        <img src="logo.png" alt="Misión Fe" class="w-24 h-24 object-contain mx-auto">
 
         <div class="bg-sky-500/10 border border-sky-500/30 text-sky-600 dark:text-sky-300 px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-wide">
           MISIÓN FE • DEVOCIONAL DIARIO
@@ -329,9 +369,8 @@
 
         <!-- SELECTOR PARA PONERSE AL DIA -->
         <div id="historial-container" class="hidden w-full bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/40 rounded-xl p-2.5 text-left space-y-1">
-          <label class="block text-[10px] font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider flex justify-between items-center">
-            <span>Ponte al día con lecturas pasadas:</span>
-            <span>🔄</span>
+          <label class="block text-[10px] font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
+            PONTE AL DÍA CON LECTURAS PASADAS 🔄:
           </label>
           <select id="select-devocional" onchange="cambiarDevocionalSeleccionado()" class="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:border-sky-500">
           </select>
@@ -352,11 +391,13 @@
           </h2>
         </div>
         
-        <div class="relative p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm max-h-[66vh] overflow-y-auto">
-          <p id="lectura-txt" class="readable-text whitespace-pre-line text-slate-700 dark:text-slate-200 pb-4"></p>
-          <!-- Indicador de desplazamiento inferior -->
-          <div class="sticky bottom-0 left-0 right-0 text-center py-1 bg-gradient-to-t from-white dark:from-slate-800 text-[11px] text-sky-500 dark:text-sky-400 font-medium animate-pulse pointer-events-none">
-            Desliza para leer más 🔽
+        <div class="relative">
+          <div id="lectura-box" onscroll="evaluarScroll('lectura-box', 'scroll-ind-2')" class="scroll-container p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm max-h-[66vh] overflow-y-auto">
+            <p id="lectura-txt" class="readable-text whitespace-pre-line text-slate-700 dark:text-slate-200"></p>
+          </div>
+          <!-- Indicadores flotantes dinámicos (solo se muestran si hay más texto para deslizar) -->
+          <div id="scroll-ind-2" class="hidden absolute bottom-2 right-4 text-[11px] text-sky-500 dark:text-sky-400 font-medium animate-pulse bg-white/90 dark:bg-slate-800/90 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800 shadow">
+            Desliza 🔽
           </div>
         </div>
       </div>
@@ -368,12 +409,17 @@
           <h2 class="text-xl font-bold">Reflexión</h2>
         </div>
         
-        <div class="p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[68vh] overflow-y-auto">
-          <p id="reflexion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
-          
-          <div class="p-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/50 rounded-xl">
-            <p class="text-xs font-semibold text-sky-700 dark:text-sky-300 mb-1">🤔 Autoanálisis:</p>
-            <p id="autoanalisis-txt" class="readable-text text-slate-600 dark:text-slate-300 italic"></p>
+        <div class="relative">
+          <div id="reflexion-box" onscroll="evaluarScroll('reflexion-box', 'scroll-ind-3')" class="scroll-container p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[66vh] overflow-y-auto">
+            <p id="reflexion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
+            
+            <div class="p-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/50 rounded-xl">
+              <p class="text-xs font-semibold text-sky-700 dark:text-sky-300 mb-1">🤔 Autoanálisis:</p>
+              <p id="autoanalisis-txt" class="readable-text text-slate-600 dark:text-slate-300 italic"></p>
+            </div>
+          </div>
+          <div id="scroll-ind-3" class="hidden absolute bottom-2 right-4 text-[11px] text-sky-500 dark:text-sky-400 font-medium animate-pulse bg-white/90 dark:bg-slate-800/90 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800 shadow">
+            Desliza 🔽
           </div>
         </div>
       </div>
@@ -385,10 +431,15 @@
           <h2 class="text-xl font-bold">Puntos de Oración</h2>
         </div>
         
-        <div class="p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[68vh] overflow-y-auto">
-          <div class="flex items-start space-x-2.5">
-            <span class="text-lg">🙏</span>
-            <p id="oracion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
+        <div class="relative">
+          <div id="oracion-box" onscroll="evaluarScroll('oracion-box', 'scroll-ind-4')" class="scroll-container p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[66vh] overflow-y-auto">
+            <div class="flex items-start space-x-2.5">
+              <span class="text-lg">🙏</span>
+              <p id="oracion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
+            </div>
+          </div>
+          <div id="scroll-ind-4" class="hidden absolute bottom-2 right-4 text-[11px] text-sky-500 dark:text-sky-400 font-medium animate-pulse bg-white/90 dark:bg-slate-800/90 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800 shadow">
+            Desliza 🔽
           </div>
         </div>
       </div>
