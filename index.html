@@ -19,15 +19,23 @@
     .font-size-md .readable-text { font-size: 1.08rem; line-height: 1.75rem; }
     .font-size-lg .readable-text { font-size: 1.25rem; line-height: 2rem; }
     
-    /* Mostrar barra de scroll de forma visible y estilizada */
+    /* Barra de desplazamiento lateral elegante y adaptativa */
     .scroll-container::-webkit-scrollbar {
-      width: 6px;
+      width: 7px;
     }
     .scroll-container::-webkit-scrollbar-track {
-      background: transparent;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 10px;
     }
+    /* Modo Claro: Barra oscura y definida */
     .scroll-container::-webkit-scrollbar-thumb {
-      background: rgba(148, 163, 184, 0.4);
+      background: rgba(100, 116, 139, 0.6);
+      border-radius: 10px;
+    }
+    /* Modo Oscuro: Barra más clara para contraste */
+    .html.dark .scroll-container::-webkit-scrollbar-thumb,
+    .dark .scroll-container::-webkit-scrollbar-thumb {
+      background: rgba(203, 213, 225, 0.5);
       border-radius: 10px;
     }
   </style>
