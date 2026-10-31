@@ -19,23 +19,27 @@
     .font-size-md .readable-text { font-size: 1.08rem; line-height: 1.75rem; }
     .font-size-lg .readable-text { font-size: 1.25rem; line-height: 2rem; }
     
-    /* Barra de desplazamiento lateral elegante y adaptativa */
+    /* Barra de desplazamiento lateral elegante, forzada y adaptativa */
+    .scroll-container {
+      overflow-y: scroll !important; /* Fuerza al navegador a mostrar siempre el carril de scroll */
+      scrollbar-width: thin;         /* Soporte para Firefox */
+    }
     .scroll-container::-webkit-scrollbar {
       width: 7px;
     }
     .scroll-container::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.03);
+      background: rgba(0, 0, 0, 0.05);
       border-radius: 10px;
     }
     /* Modo Claro: Barra oscura y definida */
     .scroll-container::-webkit-scrollbar-thumb {
-      background: rgba(100, 116, 139, 0.6);
+      background: rgba(100, 116, 139, 0.7);
       border-radius: 10px;
     }
     /* Modo Oscuro: Barra más clara para contraste */
-    .html.dark .scroll-container::-webkit-scrollbar-thumb,
+    html.dark .scroll-container::-webkit-scrollbar-thumb,
     .dark .scroll-container::-webkit-scrollbar-thumb {
-      background: rgba(203, 213, 225, 0.5);
+      background: rgba(203, 213, 225, 0.6);
       border-radius: 10px;
     }
   </style>
@@ -436,8 +440,7 @@
               <p id="autoanalisis-txt" class="readable-text text-slate-600 dark:text-slate-300 italic"></p>
             </div>
           </div>
-          <div id="scroll-ind-3" class="hidden absolute bottom-2 right-4 text-[11px] text-sky-500 dark:text-sky-400 font-medium animate-pulse bg-white/90 dark:bg-slate-800/90 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800 shadow">
-            Desliza 🔽
+          
           </div>
         </div>
       </div>
@@ -456,8 +459,7 @@
               <p id="oracion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
             </div>
           </div>
-          <div id="scroll-ind-4" class="hidden absolute bottom-2 right-4 text-[11px] text-sky-500 dark:text-sky-400 font-medium animate-pulse bg-white/90 dark:bg-slate-800/90 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800 shadow">
-            Desliza 🔽
+          
           </div>
         </div>
       </div>
