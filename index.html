@@ -19,7 +19,7 @@
     .font-size-md .readable-text { font-size: 1.08rem; line-height: 1.75rem; }
     .font-size-lg .readable-text { font-size: 1.25rem; line-height: 2rem; }
     
-    /* Estilo de desplazamiento original, limpio y fluido */
+    /* Estilo de desplazamiento limpio, fluido y profesional */
     .scroll-container::-webkit-scrollbar {
       width: 6px;
     }
@@ -70,9 +70,6 @@
       const newSize = sizes[idx];
       localStorage.setItem('mf_font_size', newSize);
       setDynamicFontSize(newSize);
-      
-      // Recalcular indicadores de scroll al cambiar tamaño de letra
-      setTimeout(verificarScrollEnPasos, 100);
     }
 
     function setDynamicFontSize(size) {
@@ -118,12 +115,10 @@
       const fechaHoy = obtenerFechaHoy();
       const claveCache = `mf_devocional_${fechaHoy}`;
 
-      // 1. Intentar cargar desde caché local SOLO SI ES DE HOY
       const devocionalCached = localStorage.getItem(claveCache);
       if (devocionalCached) {
         try {
           const cachedData = JSON.parse(devocionalCached);
-          // Validar que la fecha interna coincida con hoy
           if (cachedData.devocional && cachedData.devocional.fecha === fechaHoy) {
             devocionalData = cachedData.devocional;
             historialDevocionales = cachedData.historial || [];
@@ -136,10 +131,8 @@
         }
       }
 
-      // Si la caché es antigua o no existe, la borramos por limpieza
       localStorage.removeItem(claveCache);
 
-      // 2. Petición al backend con reintentos para traer el día actual
       let exito = false;
       let intentos = 0;
       const maxIntentos = 3;
@@ -153,10 +146,7 @@
           if (res && res.success) {
             devocionalData = res.devocional;
             historialDevocionales = res.historial || [];
-            
-            // Guardar en caché local el paquete del día actual
             localStorage.setItem(claveCache, JSON.stringify(res));
-            
             renderDevocional();
             renderHistorialSelector();
             exito = true;
@@ -251,40 +241,12 @@
       }
 
       if (step === 5) {
-        btnNextAction.className = "flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2 px-3 rounded-xl transition shadow-md shadow-emerald-500/20 text-xs text-center flex items-center justify-center space-x-1";
-        btnNextAction.innerHTML = '<span id="btn-next-text">Completar Devocional</span> <span>✅</span>';
+        btnNextAction.className = "flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 px-3 rounded-xl transition shadow-md shadow-emerald-500/20 text-xs text-center flex items-center justify-center space-x-1";
+        btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Completar Devocional</span> <span>✅</span>';
       } else {
-        btnNextAction.className = "flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1";
-        btnNextAction.innerHTML = '<span id="btn-next-text">Continuar</span> <span>➡️</span>';
+        btnNextAction.className = "flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1";
+        btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Continuar</span> <span>➡️</span>';
       }
-
-      // Evaluar si es necesario mostrar el indicador de scroll
-      setTimeout(verificarScrollEnPasos, 100);
-    }
-
-    // Lógica para detectar si hay contenido extra que requiera scroll
-    function evaluarScroll(containerId, indicatorId) {
-      const container = document.getElementById(containerId);
-      const indicator = document.getElementById(indicatorId);
-      if (!container || !indicator) return;
-
-      // Si el contenido interno es más grande que el contenedor visible
-      if (container.scrollHeight - container.clientHeight > 15) {
-        // Verificar si el usuario ya llegó al final
-        if (container.scrollTop + container.clientHeight >= container.scrollHeight - 15) {
-          indicator.classList.add('hidden');
-        } else {
-          indicator.classList.remove('hidden');
-        }
-      } else {
-        indicator.classList.add('hidden');
-      }
-    }
-
-    function verificarScrollEnPasos() {
-      if (currentStep === 2) evaluarScroll('lectura-box', 'scroll-ind-2');
-      if (currentStep === 3) evaluarScroll('reflexion-box', 'scroll-ind-3');
-      if (currentStep === 4) evaluarScroll('oracion-box', 'scroll-ind-4');
     }
 
     function ejecutarAccionSiguiente() {
@@ -357,10 +319,10 @@
   </div>
 
   <!-- CONTENIDO PRINCIPAL -->
-  <div id="app-content" class="hidden flex-1 flex flex-col justify-between h-full">
+  <div id="app-content" class="hidden flex-1 flex flex-col justify-between h-full w-full">
 
-    <!-- ÁREA DE PASOS DE LECTURA -->
-    <div class="flex-1 overflow-y-auto pb-3">
+    <!-- ÁREA DE PASOS DE LECTURA (Alineada estrictamente arriba) -->
+    <div class="flex-1 overflow-y-auto pb-3 flex flex-col justify-start">
 
       <!-- PASO 1: INICIO -->
       <div id="step-1" class="step-pane flex flex-col items-center text-center space-y-4 pt-2">
@@ -378,7 +340,7 @@
           <p class="text-xs text-slate-500 dark:text-slate-400">Prepara tu corazón para escuchar la voz del Señor hoy.</p>
         </div>
 
-        <!-- SELECTOR PARA PONERSE AL DIA -->
+        <!-- SELECTOR PARA PONERSE AL DÍA -->
         <div id="historial-container" class="hidden w-full bg-slate-100 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/40 rounded-xl p-2.5 text-left space-y-1">
           <label class="block text-[10px] font-semibold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
             PONTE AL DÍA CON LECTURAS PASADAS 🔄:
@@ -393,7 +355,7 @@
       </div>
 
       <!-- PASO 2: LECTURA BÍBLICA -->
-      <div id="step-2" class="step-pane hidden space-y-3 pt-1">
+      <div id="step-2" class="step-pane hidden space-y-3 pt-1 w-full">
         <div class="space-y-0.5">
           <span class="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 1 de 4</span>
           <h2 class="text-xl font-bold flex items-center flex-wrap gap-1">
@@ -402,64 +364,51 @@
           </h2>
         </div>
         
-        <div class="relative">
-          <div id="lectura-box" onscroll="evaluarScroll('lectura-box', 'scroll-ind-2')" class="scroll-container p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm max-h-[66vh] overflow-y-auto">
-            <p id="lectura-txt" class="readable-text whitespace-pre-line text-slate-700 dark:text-slate-200"></p>
-          </div>
-          <!-- Indicadores flotantes dinámicos (solo se muestran si hay más texto para deslizar) -->
-          
-          </div>
+        <div id="lectura-box" class="scroll-container p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm max-h-[66vh] overflow-y-auto w-full">
+          <p id="lectura-txt" class="readable-text whitespace-pre-line text-slate-700 dark:text-slate-200"></p>
         </div>
       </div>
 
       <!-- PASO 3: DEVOCIONAL & REFLEXIÓN -->
-      <div id="step-3" class="step-pane hidden space-y-3 pt-1">
+      <div id="step-3" class="step-pane hidden space-y-3 pt-1 w-full">
         <div class="space-y-0.5">
           <span class="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 2 de 4</span>
           <h2 class="text-xl font-bold">Reflexión</h2>
         </div>
         
-        <div class="relative">
-          <div id="reflexion-box" onscroll="evaluarScroll('reflexion-box', 'scroll-ind-3')" class="scroll-container p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[66vh] overflow-y-auto">
-            <p id="reflexion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
-            
-            <div class="p-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/50 rounded-xl">
-              <p class="text-xs font-semibold text-sky-700 dark:text-sky-300 mb-1">🤔 Autoanálisis:</p>
-              <p id="autoanalisis-txt" class="readable-text text-slate-600 dark:text-slate-300 italic"></p>
-            </div>
-          </div>
+        <div id="reflexion-box" class="scroll-container p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[66vh] overflow-y-auto w-full">
+          <p id="reflexion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
           
+          <div class="p-3 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/50 rounded-xl">
+            <p class="text-xs font-semibold text-sky-700 dark:text-sky-300 mb-1">🤔 Autoanálisis:</p>
+            <p id="autoanalisis-txt" class="readable-text text-slate-600 dark:text-slate-300 italic"></p>
           </div>
         </div>
       </div>
 
       <!-- PASO 4: PUNTOS PARA ORAR -->
-      <div id="step-4" class="step-pane hidden space-y-3 pt-1">
+      <div id="step-4" class="step-pane hidden space-y-3 pt-1 w-full">
         <div class="space-y-0.5">
           <span class="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 3 de 4</span>
           <h2 class="text-xl font-bold">Puntos de Oración</h2>
         </div>
         
-        <div class="relative">
-          <div id="oracion-box" onscroll="evaluarScroll('oracion-box', 'scroll-ind-4')" class="scroll-container p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[66vh] overflow-y-auto">
-            <div class="flex items-start space-x-2.5">
-              <span class="text-lg">🙏</span>
-              <p id="oracion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
-            </div>
-          </div>
-          
+        <div id="oracion-box" class="scroll-container p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[66vh] overflow-y-auto w-full">
+          <div class="flex items-start space-x-2.5">
+            <span class="text-lg">🙏</span>
+            <p id="oracion-txt" class="readable-text text-slate-700 dark:text-slate-200 whitespace-pre-line"></p>
           </div>
         </div>
       </div>
 
       <!-- PASO 5: LLÉVALO A LA VIDA -->
-      <div id="step-5" class="step-pane hidden space-y-3 pt-1">
+      <div id="step-5" class="step-pane hidden space-y-3 pt-1 w-full">
         <div class="space-y-0.5">
           <span class="text-[11px] text-sky-600 dark:text-sky-400 font-semibold uppercase tracking-wider">Paso 4 de 4</span>
           <h2 class="text-xl font-bold">Llévalo a la Vida</h2>
         </div>
         
-        <div class="p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[68vh] overflow-y-auto">
+        <div class="p-4 bg-white dark:bg-slate-800/60 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-3 shadow-sm max-h-[68vh] overflow-y-auto w-full">
           <p id="desafio-txt" class="readable-text text-slate-800 dark:text-slate-100 font-medium"></p>
           <div>
             <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1.5">Tu compromiso para hoy (opcional):</label>
@@ -469,7 +418,7 @@
       </div>
 
       <!-- PASO 6: CIERRE & RACHA -->
-      <div id="step-6" class="step-pane hidden flex flex-col items-center text-center space-y-5 pt-4">
+      <div id="step-6" class="step-pane hidden flex flex-col items-center text-center space-y-5 pt-4 w-full">
         <div class="text-5xl animate-bounce" id="arbol-emoji">🌱</div>
         <h2 class="text-2xl font-bold">¡Devocional Completado!</h2>
         <p id="arbol-txt" class="text-xs text-sky-600 dark:text-sky-300 font-medium">Permaneciendo en la Palabra</p>
@@ -488,16 +437,14 @@
 
     </div>
 
-    <!-- BARRA DE NAVEGACIÓN Y AJUSTES OPTIMIZADA (Botones inferiores más grandes y cómodos) -->
-    <div id="bottom-controls" class="hidden pt-2.5 border-t border-slate-200 dark:border-slate-800 space-y-2">
+    <!-- BARRA DE NAVEGACIÓN INFERIOR -->
+    <div id="bottom-controls" class="hidden pt-2.5 border-t border-slate-200 dark:border-slate-800 space-y-2 w-full">
       <div class="flex items-center justify-between gap-2">
         
-        <!-- Botón Anterior más cómodo -->
         <button onclick="irAStep(currentStep - 1)" class="px-3.5 py-2.5 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-semibold rounded-xl transition text-sm flex items-center shadow-sm">
           ⬅️
         </button>
 
-        <!-- Micro Controles de Accesibilidad (Aumentados de tamaño y espacio táctil) -->
         <div class="flex items-center space-x-2 bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700/50 shadow-sm">
           <button onclick="changeFontSize(-1)" class="px-2 py-0.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-sky-500">A-</button>
           <span class="text-slate-300 dark:text-slate-700">|</span>
@@ -509,7 +456,6 @@
           </button>
         </div>
 
-        <!-- Botón Principal / Continuar (Más ancho y ergonómico) -->
         <button id="btn-next-action" onclick="ejecutarAccionSiguiente()" class="flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1">
           <span id="btn-next-text" class="text-sm font-bold">Continuar</span>
           <span>➡️</span>
