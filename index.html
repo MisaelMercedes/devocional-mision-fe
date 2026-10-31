@@ -307,6 +307,51 @@
       aplicarPreferencias();
       cargarDevocional();
     });
+  // Función para alternar el resaltado de un versículo
+    function toggleResaltarVersiculo(elemento) {
+      elemento.classList.toggle('bg-amber-500/15');
+      elemento.classList.toggle('dark:bg-amber-400/10');
+      elemento.classList.toggle('border-amber-500/40');
+      elemento.classList.toggle('shadow-sm');
+      elemento.classList.toggle('favorito-activo');
+
+      sincronizarFavoritosLocalStorage();
+    }
+
+    // Guardar los versículos seleccionados en localStorage
+    function sincronizarFavoritosLocalStorage() {
+      if (!devocionalData) return;
+      const idDev = devocionalData.id || devocionalData.fecha;
+      const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
+      
+      let indices = [];
+      versiculosActivos.forEach((el, idx) => {
+        indices.push(el.innerHTML);
+      });
+
+      localStorage.setItem(`mf_favoritos_${idDev}`, JSON.stringify(indices));
+    }
+
+    // Cargar los favoritos guardados al abrir el devocional
+    function cargarFavoritosGuardados() {
+      if (!devocionalData) return;
+      const idDev = devocionalData.id || devocionalData.fecha;
+      const guardados = localStorage.getItem(`mf_favoritos_${idDev}`);
+      
+      if (guardados) {
+        try {
+          const indicesGuardados = JSON.parse(guardados);
+          const items = document.querySelectorAll('.verse-item');
+          items.forEach(item => {
+            if (indicesGuardados.includes(item.innerHTML)) {
+              item.classList.add('bg-amber-500/15', 'dark:bg-amber-400/10', 'border-amber-500/40', 'shadow-sm', 'favorito-activo');
+            }
+          });
+        } catch(e) {
+          console.error("Error al cargar favoritos", e);
+        }
+      }
+    }
   </script>
 </head>
 <body id="app-body" class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen font-sans flex flex-col justify-between p-3 max-w-md mx-auto transition-colors duration-200">
