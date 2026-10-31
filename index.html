@@ -184,10 +184,14 @@
       
       let textoLectura = devocionalData.lectura || devocionalData.texto_lectura || "";
       let lecturaFormateada = textoLectura
-        .replace(/(?:^|\s)(\d+)\s+/g, '<div class="mb-3"><strong class="text-sky-500 dark:text-sky-400 font-bold">$1.</strong> ')
+        .replace(/(?:^|\s)(\d+)\s+/g, '<div class="verse-item mb-2.5 p-2 rounded-xl cursor-pointer transition-all duration-200 hover:bg-sky-500/10 border border-transparent" onclick="toggleResaltarVersiculo(this)"><strong class="text-sky-500 dark:text-sky-400 font-bold">$1.</strong> ')
         .replace(/<\/div>/g, '') + '</div>';
 
       document.getElementById('lectura-txt').innerHTML = lecturaFormateada;
+      
+      // Restaurar favoritos guardados previamente para este devocional
+      cargarFavoritosGuardados();
+
       document.getElementById('reflexion-txt').innerText = devocionalData.reflexion || "";
       document.getElementById('autoanalisis-txt').innerText = devocionalData.autoanalisis || "";
       document.getElementById('oracion-txt').innerText = devocionalData.oracion || devocionalData.puntos_oracion || "";
