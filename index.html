@@ -30,6 +30,16 @@
       background: rgba(148, 163, 184, 0.4);
       border-radius: 10px;
     }
+
+    /* Estilo exclusivo y limpio para el versículo resaltado */
+    .verse-item.favorito-activo {
+      background-color: rgba(245, 158, 11, 0.18) !important;
+      border-color: rgba(245, 158, 11, 0.4) !important;
+    }
+    .dark .verse-item.favorito-activo {
+      background-color: rgba(251, 191, 36, 0.15) !important;
+      border-color: rgba(251, 191, 36, 0.4) !important;
+    }
   </style>
   <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbzfMQWqV6tFmeu7TeDAVWAFOumw9cIsyIx9XBJFn6k5ehVPdWOy_4DqD_GzFNggSsEU5A/exec";
@@ -183,13 +193,25 @@
       document.getElementById('lectura-titulo-cita').innerText = pasajeTexto ? `: ${pasajeTexto}` : "";
       
       let textoLectura = devocionalData.lectura || devocionalData.texto_lectura || "";
-      let lecturaFormateada = textoLectura
-        .replace(/(?:^|\s)(\d+)\s+/g, '<div class="verse-item mb-2.5 p-2 rounded-xl cursor-pointer transition-all duration-200 hover:bg-sky-500/10 border border-transparent" onclick="toggleResaltarVersiculo(this)"><strong class="text-sky-500 dark:text-sky-400 font-bold">$1.</strong> ')
-        .replace(/<\/div>/g, '') + '</div>';
+      
+      // Separar individualmente cada versículo en su propia caja independiente
+      let versiculos = textoLectura.split(/(?=\b\d+\.\s)/g);
+      let lecturaFormateada = versiculos.map(v => {
+        let txt = v.trim();
+        if (!txt) return '';
+        // Extraer el número del versículo para usarlo como identificador único
+        let numMatch = txt.match(/^(\d+)\.\s*/);
+        let numVer = numMatch ? numMatch[1] : '';
+        let contenido = numMatch ? txt.replace(/^\d+\.\s*/, '') : txt;
+        
+        return `<div data-v="${numVer}" onclick="toggleResaltarVersiculo(this)" class="verse-item mb-2.5 p-2.5 rounded-xl cursor-pointer transition-colors duration-200 border border-transparent">
+          <strong class="text-sky-500 dark:text-sky-400 font-bold">${numVer}.</strong> ${contenido}
+        </div>`;
+      }).join('');
 
       document.getElementById('lectura-txt').innerHTML = lecturaFormateada;
       
-      // Restaurar favoritos guardados previamente para este devocional
+      // Restaurar favoritos previamente guardados
       cargarFavoritosGuardados();
 
       document.getElementById('reflexion-txt').innerText = devocionalData.reflexion || "";
@@ -307,32 +329,28 @@
       aplicarPreferencias();
       cargarDevocional();
     });
-  // Función para alternar el resaltado de un versículo
+  // Función limpia para alternar o quitar el resaltado de UN solo versículo
     function toggleResaltarVersiculo(elemento) {
-      elemento.classList.toggle('bg-amber-500/15');
-      elemento.classList.toggle('dark:bg-amber-400/10');
-      elemento.classList.toggle('border-amber-500/40');
-      elemento.classList.toggle('shadow-sm');
       elemento.classList.toggle('favorito-activo');
-
       sincronizarFavoritosLocalStorage();
     }
 
-    // Guardar los versículos seleccionados en localStorage
+    // Guardar solo los números de versículos seleccionados
     function sincronizarFavoritosLocalStorage() {
       if (!devocionalData) return;
       const idDev = devocionalData.id || devocionalData.fecha;
       const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
       
-      let indices = [];
-      versiculosActivos.forEach((el, idx) => {
-        indices.push(el.innerHTML);
+      let seleccionados = [];
+      versiculosActivos.forEach(el => {
+        let num = el.getAttribute('data-v');
+        if (num) seleccionados.push(num);
       });
 
-      localStorage.setItem(`mf_favoritos_${idDev}`, JSON.stringify(indices));
+      localStorage.setItem(`mf_favoritos_${idDev}`, JSON.stringify(seleccionados));
     }
 
-    // Cargar los favoritos guardados al abrir el devocional
+    // Cargar los versículos guardados al abrir la lectura
     function cargarFavoritosGuardados() {
       if (!devocionalData) return;
       const idDev = devocionalData.id || devocionalData.fecha;
@@ -340,11 +358,12 @@
       
       if (guardados) {
         try {
-          const indicesGuardados = JSON.parse(guardados);
+          const seleccionados = JSON.parse(guardados);
           const items = document.querySelectorAll('.verse-item');
           items.forEach(item => {
-            if (indicesGuardados.includes(item.innerHTML)) {
-              item.classList.add('bg-amber-500/15', 'dark:bg-amber-400/10', 'border-amber-500/40', 'shadow-sm', 'favorito-activo');
+            let num = item.getAttribute('data-v');
+            if (seleccionados.includes(num)) {
+              item.classList.add('favorito-activo');
             }
           });
         } catch(e) {
