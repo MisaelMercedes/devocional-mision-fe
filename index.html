@@ -344,6 +344,7 @@
     function toggleResaltarVersiculo(elemento) {
       elemento.classList.toggle('favorito-activo');
       sincronizarFavoritosLocalStorage();
+      actualizarEstadoBotonTarjeta(); // <-- Añadir esta línea aquí
     }
 
     // Guardar solo los números de versículos seleccionados
@@ -361,12 +362,12 @@
       localStorage.setItem(`mf_favoritos_${idDev}`, JSON.stringify(seleccionados));
     }
 
-    // Cargar los versículos guardados al abrir la lectura
+    // Cargar los versiculos guardados al abrir la lectura
     function cargarFavoritosGuardados() {
       if (!devocionalData) return;
       const idDev = devocionalData.id || devocionalData.fecha;
       const guardados = localStorage.getItem(`mf_favoritos_${idDev}`);
-      
+
       if (guardados) {
         try {
           const seleccionados = JSON.parse(guardados);
@@ -380,6 +381,63 @@
         } catch(e) {
           console.error("Error al cargar favoritos", e);
         }
+      }
+      
+      // 👉 AGREGAR ESTA LÍNEA AQUÍ (al final de la función, antes de cerrar)
+      actualizarEstadoBotonTarjeta();
+    }
+    // Mostrar u ocultar el botón de tarjeta según si hay favoritos seleccionados
+    function actualizarEstadoBotonTarjeta() {
+      const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
+      const btnTarjeta = document.getElementById('btn-abrir-tarjeta');
+      if (btnTarjeta) {
+        if (versiculosActivos.length > 0) {
+          btnTarjeta.classList.remove('hidden');
+        } else {
+          btnTarjeta.classList.add('hidden');
+        }
+      }
+    }
+
+    // Abrir modal y rellenar con los versículos seleccionados
+    function abrirModalTarjeta() {
+      const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
+      if (versiculosActivos.length === 0) return;
+
+      let contenedorTxt = document.getElementById('tarjeta-versiculos-txt');
+      contenedorTxt.innerHTML = "";
+
+      versiculosActivos.forEach(el => {
+        let p = document.createElement('p');
+        p.className = "text-xs leading-relaxed";
+        p.innerHTML = el.innerHTML;
+        contenedorTxt.appendChild(p);
+      });
+
+      document.getElementById('tarjeta-fecha').innerText = document.getElementById('fecha-txt').innerText;
+      document.getElementById('tarjeta-cita-lbl').innerText = document.getElementById('pasaje-title').innerText;
+
+      document.getElementById('modal-tarjeta').classList.remove('hidden');
+    }
+
+    function cerrarModalTarjeta() {
+      document.getElementById('modal-tarjeta').classList.add('hidden');
+    }
+
+    // Generar imagen y descargar/compartir
+    async function descargarOCompartirTarjeta() {
+      const tarjetaEl = document.getElementById('tarjeta-canvas-container');
+      try {
+        let canvas = await html2canvas(tarjetaEl, { scale: 2, useCORS: true, backgroundColor: null });
+        let imageURL = canvas.toDataURL("image/png");
+
+        let link = document.createElement('a');
+        link.href = imageURL;
+        link.download = `Devocional-MisionFe-${obtenerFechaHoy ? obtenerFechaHoy() : 'tarjeta'}.png`;
+        link.click();
+      } catch (err) {
+        console.error("Error al generar imagen:", err);
+        alert("No se pudo generar la tarjeta. Intenta de nuevo.");
       }
     }
   </script>
