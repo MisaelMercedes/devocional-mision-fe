@@ -263,11 +263,11 @@
     }
 
     function irAStep(step) {
+      currentStep = step;
       document.querySelectorAll('.step-pane').forEach(el => el.classList.add('hidden'));
       document.getElementById(`step-${step}`).classList.remove('hidden');
-      window.scrollTo(0,0);
-      currentStep = step;
-
+      window.scrollTo(0, 0);
+      
       const bottomControls = document.getElementById('bottom-controls');
       const btnNextAction = document.getElementById('btn-next-action');
 
@@ -278,12 +278,15 @@
       }
 
       if (step === 5) {
-        btnNextAction.className = "flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 px-3 rounded-xl transition shadow-md shadow-emerald-500/20 text-xs text-center flex items-center justify-center space-x-1";
-        btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Completar Devocional</span> <span>✅</span>';
+        btnNextAction.className = "flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 px-3 rounded-2xl transition shadow-md text-xs flex items-center justify-center space-x-1";
+        btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Completar</span><span>✨</span>';
       } else {
-        btnNextAction.className = "flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1";
-        btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Continuar</span> <span>➡️</span>';
+        btnNextAction.className = "flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 px-3 rounded-2xl transition shadow-md text-xs flex items-center justify-center space-x-1";
+        btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Continuar</span><span>➡️</span>';
       }
+
+      // Actualizar estado del botón flotante de la tarjeta según el paso
+      actualizarEstadoBotonTarjeta();
     }
 
     function ejecutarAccionSiguiente() {
@@ -386,13 +389,13 @@
       // 👉 AGREGAR ESTA LÍNEA AQUÍ (al final de la función, antes de cerrar)
       actualizarEstadoBotonTarjeta();
     }
-    // Mostrar u ocultar el botón flotante de tarjeta según si hay favoritos seleccionados
+    // Mostrar u ocultar el botón flotante solo si hay versículos seleccionados Y estamos en el Paso 1
     function actualizarEstadoBotonTarjeta() {
       const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
       const contenedorFlotante = document.getElementById('contenedor-btn-flotante');
       
       if (contenedorFlotante) {
-        if (versiculosActivos.length > 0) {
+        if (typeof currentStep !== 'undefined' && currentStep === 1 && versiculosActivos.length > 0) {
           contenedorFlotante.classList.remove('hidden');
         } else {
           contenedorFlotante.classList.add('hidden');
@@ -428,12 +431,15 @@
     // Generar imagen y descargar de forma segura
     async function descargarOCompartirTarjeta() {
       const tarjetaEl = document.getElementById('tarjeta-canvas-container');
-      if (!tarjetaEl) return;
+      if (!tarjetaEl) {
+        alert("No se encontró el contenedor de la tarjeta.");
+        return;
+      }
 
       try {
-        // Mostramos un aviso visual rápido o cambiamos texto si deseas
+        // Generar el canvas con la librería
         let canvas = await html2canvas(tarjetaEl, { 
-          scale: 3, // Mayor resolución para que nítida en celulares
+          scale: 3, 
           useCORS: true, 
           allowTaint: true,
           backgroundColor: null 
@@ -441,16 +447,19 @@
 
         let imageURL = canvas.toDataURL("image/png");
 
+        // Crear enlace temporal de descarga compatible con móviles
         let link = document.createElement('a');
         link.href = imageURL;
         link.download = `Devocional-MisionFe.png`;
+        
+        // Adjuntar, simular clic y remover
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
 
       } catch (err) {
-        console.error("Error al generar imagen:", err);
-        alert("No se pudo generar la tarjeta. Asegúrate de abrir la app desde el navegador o Telegram con permisos estables.");
+        console.error("Error detallado al generar imagen:", err);
+        alert("Ocurrió un error al generar la imagen. Intenta nuevamente.");
       }
     }
   </script>
@@ -666,6 +675,12 @@
 
     </div>
   </div>
-  
+  <!-- BOTÓN FLOTANTE PARA CREAR TARJETA -->
+  <div id="contenedor-btn-flotante" class="hidden fixed bottom-20 right-5 z-40">
+    <button onclick="abrirModalTarjeta()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold px-4 py-3 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-amber-300/50 transition-transform active:scale-95">
+      <span class="text-base">✨</span>
+      <span class="text-xs uppercase tracking-wider">Crear Tarjeta</span>
+    </button>
+  </div>
 </body>
 </html>
