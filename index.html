@@ -7,6 +7,8 @@
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <!-- Tailwind CSS via CDN -->
+  <!-- Librería para generar la tarjeta de imagen -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -531,6 +533,11 @@
             <span class="dark:hidden">🌙</span>
             <span class="hidden dark:inline">☀️</span>
           </button>
+          <!-- Botón para abrir tarjeta (aparece cuando hay versículos seleccionados) -->
+        <button id="btn-abrir-tarjeta" onclick="abrirModalTarjeta()" class="hidden px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-600 dark:text-amber-300 font-bold rounded-xl transition text-xs flex items-center space-x-1 shadow-sm">
+          <span>✨</span>
+          <span class="text-[11px]">Tarjeta</span>
+        </button>
         </div>
 
         <button id="btn-next-action" onclick="ejecutarAccionSiguiente()" class="flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 px-3 rounded-xl transition shadow-md shadow-sky-500/20 text-xs text-center flex items-center justify-center space-x-1">
@@ -542,6 +549,51 @@
     </div>
 
   </div>
+<!-- MODAL DE TARJETA DEVOCIONAL -->
+  <div id="modal-tarjeta" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 w-full max-w-sm space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200">
+      
+      <div class="flex items-center justify-between">
+        <span class="text-xs font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">🌟 Tu Tarjeta Misión Fe</span>
+        <button onclick="cerrarModalTarjeta()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg font-bold px-2">✕</button>
+      </div>
 
+      <!-- CONTENEDOR DE LA TARJETA VISIBLE -->
+      <div id="tarjeta-canvas-container" class="bg-gradient-to-br from-sky-900 via-slate-900 to-slate-950 text-slate-100 p-6 rounded-2xl shadow-inner border border-sky-500/30 space-y-4 text-left relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-6 opacity-10 pointer-events-none">
+          <img src="logo.png" alt="Logo" class="w-36 h-36 object-contain">
+        </div>
+
+        <div class="flex items-center space-x-2 border-b border-slate-800 pb-3">
+          <img src="logo.png" alt="Misión Fe" class="w-8 h-8 object-contain">
+          <div>
+            <h3 class="text-xs font-extrabold tracking-widest text-sky-400 uppercase">Misión Fe</h3>
+            <p id="tarjeta-fecha" class="text-[10px] text-slate-400"></p>
+          </div>
+        </div>
+
+        <div id="tarjeta-versiculos-txt" class="text-xs leading-relaxed text-slate-200 font-serif italic space-y-1">
+          <!-- Versículos seleccionados -->
+        </div>
+
+        <div class="pt-2 flex items-center justify-between border-t border-slate-800/80 text-[10px] text-sky-300 font-semibold">
+          <span id="tarjeta-cita-lbl"></span>
+          <span>#DevocionalMisionFe</span>
+        </div>
+      </div>
+
+      <!-- BOTONES DE ACCIÓN -->
+      <div class="space-y-2 pt-1">
+        <button onclick="descargarOCompartirTarjeta()" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 rounded-xl transition shadow-md text-xs flex items-center justify-center space-x-1.5">
+          <span>📥 Descargar / Compartir Imagen</span>
+        </button>
+        <button onclick="cerrarModalTarjeta()" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold py-2 rounded-xl transition text-xs">
+          Volver a la lectura
+        </button>
+      </div>
+
+    </div>
+  </div>
+  
 </body>
 </html>
