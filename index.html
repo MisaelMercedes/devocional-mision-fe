@@ -424,13 +424,19 @@
       document.getElementById('modal-tarjeta').classList.add('hidden');
     }
 
-    // DESCARGA / GUARDADO BLINDADO PARA MÓVILES Y TELEGRAM
+// Generador y visor infalible compatible con PC, iPhone y Android
     async function descargarOCompartirTarjeta() {
       const tarjetaEl = document.getElementById('tarjeta-canvas-container');
       if (!tarjetaEl) {
         alert("No se encontró el contenedor de la tarjeta.");
         return;
       }
+
+      // Mostrar indicador visual de carga en el botón
+      const btnDescarga = event.currentTarget;
+      const textoOriginal = btnDescarga.innerHTML;
+      btnDescarga.innerHTML = "<span>⏳ Generando imagen...</span>";
+      btnDescarga.disabled = true;
 
       try {
         let canvas = await html2canvas(tarjetaEl, { 
@@ -442,35 +448,43 @@
 
         let imageURL = canvas.toDataURL("image/png");
 
-        const ancla = document.createElement('a');
-        ancla.href = imageURL;
-        ancla.download = `Devocional-MisionFe.png`;
-        
-        document.body.appendChild(ancla);
-        ancla.click();
-        
-        setTimeout(() => {
-          document.body.removeChild(ancla);
-        }, 100);
-
-      } catch (err) {
-        console.error("Error al generar la imagen:", err);
-        try {
-          let canvasFallback = await html2canvas(tarjetaEl, { scale: 2, useCORS: true });
-          let urlFallback = canvasFallback.toDataURL("image/png");
-          let ventana = window.open();
+        // Creamos una ventana emergente limpia o un visor dentro del mismo modal con la imagen lista
+        let ventana = window.open();
+        if (ventana) {
           ventana.document.write(`
             <html>
-              <head><title>Guardar Tarjeta - Misión Fe</title></head>
-              <body style="background:#0f172a; color:white; text-align:center; font-family:sans-serif; padding:20px;">
-                <h3>Mantén presionada la imagen para guardarla 📱</h3>
-                <img src="${urlFallback}" style="max-width:100%; border-radius:12px; margin-top:10px;" />
+              <head>
+                <title>Tu Tarjeta - Misión Fe</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              </head>
+              <body style="background:#0f172a; color:white; text-align:center; font-family:sans-serif; padding:20px; margin:0;">
+                <h3 style="margin-bottom: 10px; font-size: 16px;">✨ ¡Tarjeta lista!</h3>
+                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 20px;">
+                  📱 <b>En celular:</b> Mantén presionada la imagen y selecciona "Guardar en fotos".<br>
+                  💻 <b>En PC:</b> Haz clic derecho sobre la imagen y "Guardar imagen como...".
+                </p>
+                <img src="${imageURL}" style="max-width:100%; height:auto; border-radius:16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);" />
+                <br><br>
+                <button onclick="window.close()" style="background:#0284c7; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">Cerrar ventana</button>
               </body>
             </html>
           `);
-        } catch(e) {
-          alert("No se pudo generar la tarjeta. Por favor toma una captura de pantalla.");
+        } else {
+          // Si el navegador bloquea la ventana emergente, usamos el método de enlace directo
+          const ancla = document.createElement('a');
+          ancla.href = imageURL;
+          ancla.download = `Devocional-MisionFe.png`;
+          document.body.appendChild(ancla);
+          ancla.click();
+          document.body.removeChild(ancla);
         }
+
+      } catch (err) {
+        console.error("Error al generar la imagen:", err);
+        alert("Ocurrió un error al generar la tarjeta. Intenta tomar una captura de pantalla.");
+      } finally {
+        btnDescarga.innerHTML = textoOriginal;
+        btnDescarga.disabled = false;
       }
     }
   </script>
