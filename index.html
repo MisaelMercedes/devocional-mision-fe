@@ -389,13 +389,17 @@
       // 👉 AGREGAR ESTA LÍNEA AQUÍ (al final de la función, antes de cerrar)
       actualizarEstadoBotonTarjeta();
     }
-    // Mostrar u ocultar el botón flotante solo si hay versículos seleccionados Y estamos en el Paso 1
+    // Mostrar u ocultar el botón flotante solo si hay versículos seleccionados Y estamos visualmente en el Paso 1
     function actualizarEstadoBotonTarjeta() {
       const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
       const contenedorFlotante = document.getElementById('contenedor-btn-flotante');
-      
+      const step1Pane = document.getElementById('step-1'); // Asumiendo que tu contenedor del paso 1 tiene este ID
+
       if (contenedorFlotante) {
-        if (typeof currentStep !== 'undefined' && currentStep === 1 && versiculosActivos.length > 0) {
+        // Verificamos que currentStep sea 1, que el panel 1 esté activo y haya versículos
+        const paso1Visible = step1Pane && !step1Pane.classList.contains('hidden');
+        
+        if (typeof currentStep !== 'undefined' && currentStep === 1 && paso1Visible && versiculosActivos.length > 0) {
           contenedorFlotante.classList.remove('hidden');
         } else {
           contenedorFlotante.classList.add('hidden');
@@ -437,7 +441,7 @@
       }
 
       try {
-        // Generar el canvas con la librería
+        // Generar la imagen con html2canvas
         let canvas = await html2canvas(tarjetaEl, { 
           scale: 3, 
           useCORS: true, 
@@ -447,19 +451,30 @@
 
         let imageURL = canvas.toDataURL("image/png");
 
-        // Crear enlace temporal de descarga compatible con móviles
-        let link = document.createElement('a');
-        link.href = imageURL;
-        link.download = `Devocional-MisionFe.png`;
+        // Método compatible con Telegram y móviles para descargar o guardar
+        const ancla = document.createElement('a');
+        ancla.href = imageURL;
+        ancla.download = `Devocional-MisionFe.png`;
         
-        // Adjuntar, simular clic y remover
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        // En algunos entornos móviles de Telegram, es necesario añadirlo al DOM temporalmente
+        document.body.appendChild(ancla);
+        ancla.click();
+        
+        setTimeout(() => {
+          document.body.removeChild(ancla);
+        }, 100);
 
       } catch (err) {
-        console.error("Error detallado al generar imagen:", err);
-        alert("Ocurrió un error al generar la imagen. Intenta nuevamente.");
+        console.error("Error al generar la imagen:", err);
+        // Plan B: Si falla la descarga directa, abrimos la imagen en otra pestaña para que el usuario la guarde manualmente
+        try {
+          let canvasFallback = await html2canvas(tarjetaEl, { scale: 2, useCORS: true });
+          let urlFallback = canvasFallback.toDataURL("image/png");
+          let win = window.open();
+          win.document.write('<iframe src="' + urlFallback + '" frameborder="0" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%;" allowfullscreen></iframe>');
+        } catch(e) {
+          alert("No se pudo generar la tarjeta. Intenta tomar una captura de pantalla.");
+        }
       }
     }
   </script>
