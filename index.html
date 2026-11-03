@@ -6,9 +6,9 @@
   <title>Devocional Misión Fe</title>
   <!-- Telegram WebApp SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <!-- Tailwind CSS via CDN -->
   <!-- Librería para generar la tarjeta de imagen -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -196,7 +196,6 @@
       
       let textoLectura = devocionalData.lectura || devocionalData.texto_lectura || "";
       
-      // Separar por versículos pero unirlos en un flujo continuo de lectura
       let partes = textoLectura.split(/(?=\b\d{1,3}[\.\s]\s*)/g);
       let lecturaFormateada = "";
 
@@ -209,7 +208,6 @@
           if (numMatch) {
             let numVer = numMatch[1];
             let contenido = txt.replace(/^\d{1,3}[\.\s]?\s*/, '');
-            // Usamos span en línea para que conserve la estructura de párrafo continuo
             return `<span data-v="${numVer}" onclick="toggleResaltarVersiculo(this)" class="verse-item inline cursor-pointer px-1 py-0.5 rounded transition-colors duration-200"><strong class="text-sky-500 dark:text-sky-400 font-bold">${numVer}.</strong> ${contenido} </span>`;
           } else {
             return `<span>${txt} </span>`;
@@ -219,10 +217,8 @@
         lecturaFormateada = `<span class="verse-item inline cursor-pointer px-1 py-0.5 rounded" data-v="1">${textoLectura}</span>`;
       }
 
-      // Envolvemos todo el bloque en un párrafo con interlineado cómodo
       document.getElementById('lectura-txt').innerHTML = `<p class="readable-text text-slate-700 dark:text-slate-200 leading-relaxed">${lecturaFormateada}</p>`;
       
-      // Restaurar favoritos previamente guardados
       cargarFavoritosGuardados();
 
       document.getElementById('reflexion-txt').innerText = devocionalData.reflexion || "";
@@ -285,7 +281,6 @@
         btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Continuar</span><span>➡️</span>';
       }
 
-      // Forzar actualización al cambiar de paso
       actualizarEstadoBotonTarjeta();
     }
 
@@ -343,14 +338,13 @@
       aplicarPreferencias();
       cargarDevocional();
     });
-  // Función limpia para alternar o quitar el resaltado de UN solo versículo
+
     function toggleResaltarVersiculo(elemento) {
       elemento.classList.toggle('favorito-activo');
       sincronizarFavoritosLocalStorage();
-      actualizarEstadoBotonTarjeta(); // <--- Forzar actualización inmediata aquí
+      actualizarEstadoBotonTarjeta();
     }
 
-    // Guardar solo los números de versículos seleccionados
     function sincronizarFavoritosLocalStorage() {
       if (!devocionalData) return;
       const idDev = devocionalData.id || devocionalData.fecha;
@@ -365,7 +359,6 @@
       localStorage.setItem(`mf_favoritos_${idDev}`, JSON.stringify(seleccionados));
     }
 
-    // Cargar los versiculos guardados al abrir la lectura
     function cargarFavoritosGuardados() {
       if (!devocionalData) return;
       const idDev = devocionalData.id || devocionalData.fecha;
@@ -386,22 +379,20 @@
         }
       }
       
-      // 👉 AGREGAR ESTA LÍNEA AQUÍ (al final de la función, antes de cerrar)
       actualizarEstadoBotonTarjeta();
     }
-    // Versión final optimizada: Mostrar u ocultar el botón flotante si hay versículos seleccionados en el Paso 1
+
+    // EL BOTÓN FLOTANTE APARECE ÚNICAMENTE EN EL PASO 2 (LECTURA BÍBLICA)
     function actualizarEstadoBotonTarjeta() {
       const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
       const contenedorFlotante = document.getElementById('contenedor-btn-flotante');
       
       if (!contenedorFlotante) return;
 
-      // Verificamos si estamos en el paso 1 ya sea por la variable global o por la visibilidad del DOM
-      const step1El = document.getElementById('step-1');
-      const esPasoLectura = (typeof currentStep !== 'undefined' && currentStep === 1) || 
-                            (step1El && !step1El.classList.contains('hidden'));
+      const step2El = document.getElementById('step-2');
+      const esPasoLectura = (typeof currentStep !== 'undefined' && currentStep === 2) || 
+                            (step2El && !step2El.classList.contains('hidden'));
 
-      // El botón solo debe verse si estamos en el paso de lectura Y hay al menos un versículo seleccionado
       if (esPasoLectura && versiculosActivos.length > 0) {
         contenedorFlotante.classList.remove('hidden');
       } else {
@@ -409,7 +400,6 @@
       }
     }
 
-    // Abrir modal y rellenar con los versículos seleccionados
     function abrirModalTarjeta() {
       const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
       if (versiculosActivos.length === 0) return;
@@ -434,7 +424,7 @@
       document.getElementById('modal-tarjeta').classList.add('hidden');
     }
 
-    // Generar imagen y descargar de forma segura
+    // DESCARGA / GUARDADO BLINDADO PARA MÓVILES Y TELEGRAM
     async function descargarOCompartirTarjeta() {
       const tarjetaEl = document.getElementById('tarjeta-canvas-container');
       if (!tarjetaEl) {
@@ -443,7 +433,6 @@
       }
 
       try {
-        // Generar la imagen con html2canvas
         let canvas = await html2canvas(tarjetaEl, { 
           scale: 3, 
           useCORS: true, 
@@ -453,12 +442,10 @@
 
         let imageURL = canvas.toDataURL("image/png");
 
-        // Método compatible con Telegram y móviles para descargar o guardar
         const ancla = document.createElement('a');
         ancla.href = imageURL;
         ancla.download = `Devocional-MisionFe.png`;
         
-        // En algunos entornos móviles de Telegram, es necesario añadirlo al DOM temporalmente
         document.body.appendChild(ancla);
         ancla.click();
         
@@ -468,14 +455,21 @@
 
       } catch (err) {
         console.error("Error al generar la imagen:", err);
-        // Plan B: Si falla la descarga directa, abrimos la imagen en otra pestaña para que el usuario la guarde manualmente
         try {
           let canvasFallback = await html2canvas(tarjetaEl, { scale: 2, useCORS: true });
           let urlFallback = canvasFallback.toDataURL("image/png");
-          let win = window.open();
-          win.document.write('<iframe src="' + urlFallback + '" frameborder="0" style="border:0; top:0; left:0; bottom:0; right:0; width:100%; height:100%;" allowfullscreen></iframe>');
+          let ventana = window.open();
+          ventana.document.write(`
+            <html>
+              <head><title>Guardar Tarjeta - Misión Fe</title></head>
+              <body style="background:#0f172a; color:white; text-align:center; font-family:sans-serif; padding:20px;">
+                <h3>Mantén presionada la imagen para guardarla 📱</h3>
+                <img src="${urlFallback}" style="max-width:100%; border-radius:12px; margin-top:10px;" />
+              </body>
+            </html>
+          `);
         } catch(e) {
-          alert("No se pudo generar la tarjeta. Intenta tomar una captura de pantalla.");
+          alert("No se pudo generar la tarjeta. Por favor toma una captura de pantalla.");
         }
       }
     }
@@ -497,7 +491,7 @@
   <!-- CONTENIDO PRINCIPAL -->
   <div id="app-content" class="hidden flex-1 flex flex-col justify-between h-full w-full">
 
-    <!-- ÁREA DE PASOS DE LECTURA (Alineada estrictamente arriba) -->
+    <!-- ÁREA DE PASOS DE LECTURA -->
     <div class="flex-1 overflow-y-auto pb-3 flex flex-col justify-start">
 
       <!-- PASO 1: INICIO -->
@@ -614,12 +608,13 @@
     </div>
 
     <!-- BOTÓN FLOTANTE PARA CREAR TARJETA (Contextual) -->
-  <div id="contenedor-btn-flotante" class="hidden fixed bottom-20 right-5 z-40 animate-bounce duration-1000">
-    <button onclick="abrirModalTarjeta()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold px-4 py-3 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-amber-300/50 transition-transform active:scale-95">
-      <span class="text-base">✨</span>
-      <span class="text-xs uppercase tracking-wider">Crear Tarjeta</span>
-    </button>
-  </div>
+    <div id="contenedor-btn-flotante" class="hidden fixed bottom-20 right-5 z-40 animate-bounce duration-1000">
+      <button onclick="abrirModalTarjeta()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold px-4 py-3 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-amber-300/50 transition-transform active:scale-95">
+        <span class="text-base">✨</span>
+        <span class="text-xs uppercase tracking-wider">Crear Tarjeta</span>
+      </button>
+    </div>
+
     <!-- BARRA DE NAVEGACIÓN INFERIOR -->
     <div id="bottom-controls" class="hidden pt-2.5 border-t border-slate-200 dark:border-slate-800 space-y-2 w-full">
       <div class="flex items-center justify-between gap-2">
@@ -647,7 +642,7 @@
     </div>
   </div>
   
-<!-- MODAL DE TARJETA DEVOCIONAL -->
+  <!-- MODAL DE TARJETA DEVOCIONAL -->
   <div id="modal-tarjeta" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 w-full max-w-sm space-y-4 shadow-2xl animate-in fade-in zoom-in duration-200">
       
@@ -692,12 +687,6 @@
 
     </div>
   </div>
-  <!-- BOTÓN FLOTANTE PARA CREAR TARJETA -->
-  <div id="contenedor-btn-flotante" class="hidden fixed bottom-20 right-5 z-40">
-    <button onclick="abrirModalTarjeta()" class="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold px-4 py-3 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-amber-300/50 transition-transform active:scale-95">
-      <span class="text-base">✨</span>
-      <span class="text-xs uppercase tracking-wider">Crear Tarjeta</span>
-    </button>
-  </div>
+
 </body>
 </html>
