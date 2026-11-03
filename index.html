@@ -285,7 +285,7 @@
         btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Continuar</span><span>➡️</span>';
       }
 
-      // Actualizar estado del botón flotante de la tarjeta según el paso
+      // Forzar actualización al cambiar de paso
       actualizarEstadoBotonTarjeta();
     }
 
@@ -347,7 +347,7 @@
     function toggleResaltarVersiculo(elemento) {
       elemento.classList.toggle('favorito-activo');
       sincronizarFavoritosLocalStorage();
-      actualizarEstadoBotonTarjeta(); // <-- Añadir esta línea aquí
+      actualizarEstadoBotonTarjeta(); // <--- Forzar actualización inmediata aquí
     }
 
     // Guardar solo los números de versículos seleccionados
@@ -389,21 +389,23 @@
       // 👉 AGREGAR ESTA LÍNEA AQUÍ (al final de la función, antes de cerrar)
       actualizarEstadoBotonTarjeta();
     }
-    // Mostrar u ocultar el botón flotante solo si hay versículos seleccionados Y estamos visualmente en el Paso 1
+    // Versión final optimizada: Mostrar u ocultar el botón flotante si hay versículos seleccionados en el Paso 1
     function actualizarEstadoBotonTarjeta() {
       const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
       const contenedorFlotante = document.getElementById('contenedor-btn-flotante');
-      const step1Pane = document.getElementById('step-1'); // Asumiendo que tu contenedor del paso 1 tiene este ID
+      
+      if (!contenedorFlotante) return;
 
-      if (contenedorFlotante) {
-        // Verificamos que currentStep sea 1, que el panel 1 esté activo y haya versículos
-        const paso1Visible = step1Pane && !step1Pane.classList.contains('hidden');
-        
-        if (typeof currentStep !== 'undefined' && currentStep === 1 && paso1Visible && versiculosActivos.length > 0) {
-          contenedorFlotante.classList.remove('hidden');
-        } else {
-          contenedorFlotante.classList.add('hidden');
-        }
+      // Verificamos si estamos en el paso 1 ya sea por la variable global o por la visibilidad del DOM
+      const step1El = document.getElementById('step-1');
+      const esPasoLectura = (typeof currentStep !== 'undefined' && currentStep === 1) || 
+                            (step1El && !step1El.classList.contains('hidden'));
+
+      // El botón solo debe verse si estamos en el paso de lectura Y hay al menos un versículo seleccionado
+      if (esPasoLectura && versiculosActivos.length > 0) {
+        contenedorFlotante.classList.remove('hidden');
+      } else {
+        contenedorFlotante.classList.add('hidden');
       }
     }
 
