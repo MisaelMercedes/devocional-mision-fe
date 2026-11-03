@@ -424,57 +424,45 @@
       document.getElementById('modal-tarjeta').classList.add('hidden');
     }
 
-// Versión definitiva blindada para generar y descargar la tarjeta sin bloqueos
-    async function descargarOCompartirTarjeta() {
-      const tarjetaEl = document.getElementById('tarjeta-canvas-container');
-      if (!tarjetaEl) {
-        alert("No se encontró el contenedor de la tarjeta.");
+// Opción B: Copiar versículos formateados al portapapeles de forma infalible
+    function descargarOCompartirTarjeta() {
+      const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
+      if (versiculosActivos.length === 0) {
+        alert("No hay versículos seleccionados.");
         return;
       }
 
-      // Obtener el botón para mostrar el estado de carga
-      const btnDescarga = event ? event.currentTarget : null;
-      let textoOriginal = "";
-      if (btnDescarga) {
-        textoOriginal = btnDescarga.innerHTML;
-        btnDescarga.innerHTML = "<span>⏳ Generando...</span>";
-        btnDescarga.disabled = true;
-      }
+      let textoVersiculos = "";
+      versiculosActivos.forEach(el => {
+        // Limpiamos y extraemos el texto limpio del versículo
+        textoVersiculos += el.innerText.trim() + " ";
+      });
 
-      try {
-        // Configuramos html2canvas con opciones seguras para evitar bloqueos por CORS o imágenes externas
-        let canvas = await html2canvas(tarjetaEl, { 
-          scale: 2, // Bajamos a 2 para garantizar velocidad y compatibilidad en móviles
-          useCORS: true, 
-          allowTaint: true,
-          backgroundColor: '#0f172a' // Forzamos un fondo sólido para prevenir transparencias erróneas
-        });
+      let citaPasaje = document.getElementById('pasaje-title').innerText;
+      let fechaTexto = document.getElementById('fecha-txt').innerText;
 
-        let imageURL = canvas.toDataURL("image/png");
+      // Armamos un mensaje elegante y listo para compartir
+      let mensajeFinal = `🌟 *Devocional Misión Fe* (${fechaTexto})\n📖 *${citaPasaje}*\n\n"${textoVersiculos.trim()}"\n\n#DevocionalMisionFe`;
 
-        // Crear elemento de anclaje para descarga directa
-        const ancla = document.createElement('a');
-        ancla.href = imageURL;
-        ancla.download = `Devocional-MisionFe-${new Date().toISOString().split('T')[0]}.png`;
-        
-        document.body.appendChild(ancla);
-        ancla.click();
-        
-        // Limpieza del DOM tras la descarga
-        setTimeout(() => {
-          document.body.removeChild(ancla);
-        }, 200);
-
-      } catch (err) {
-        console.error("Error crítico en html2canvas:", err);
-        alert("No se pudo descargar automáticamente. Por favor, toma una captura de pantalla a la tarjeta.");
-      } finally {
-        // Restaurar el botón a su estado normal
-        if (btnDescarga) {
-          btnDescarga.innerHTML = textoOriginal;
-          btnDescarga.disabled = false;
+      // Copiar al portapapeles usando la API moderna del navegador
+      navigator.clipboard.writeText(mensajeFinal).then(() => {
+        // Mostrar aviso visual de éxito en el mismo botón o mediante alerta rápida
+        const btn = event ? event.currentTarget : null;
+        if (btn) {
+          let originalText = btn.innerHTML;
+          btn.innerHTML = "<span>✅ ¡Copiado con éxito!</span>";
+          setTimeout(() => {
+            btn.innerHTML = originalText;
+            cerrarModalTarjeta();
+          }, 1500);
+        } else {
+          alert("¡Versículos copiados al portapapeles! Ya puedes pegarlos donde desees.");
+          cerrarModalTarjeta();
         }
-      }
+      }).catch(err => {
+        console.error("Error al copiar:", err);
+        alert("No se pudo copiar automáticamente. Por favor selecciónalos manualmente.");
+      });
     }
   </script>
 </head>
@@ -681,7 +669,7 @@
       <!-- BOTONES DE ACCIÓN -->
       <div class="space-y-2 pt-1">
         <button onclick="descargarOCompartirTarjeta()" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 rounded-xl transition shadow-md text-xs flex items-center justify-center space-x-1.5">
-          <span>📥 Descargar / Compartir Imagen</span>
+          <span>📋 Copiar versículos para compartir</span>
         </button>
         <button onclick="cerrarModalTarjeta()" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold py-2 rounded-xl transition text-xs">
           Volver a la lectura
