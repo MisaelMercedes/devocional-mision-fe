@@ -424,7 +424,7 @@
       document.getElementById('modal-tarjeta').classList.add('hidden');
     }
 
-// Generador y visor infalible compatible con PC, iPhone y Android
+// Versión definitiva blindada para generar y descargar la tarjeta sin bloqueos
     async function descargarOCompartirTarjeta() {
       const tarjetaEl = document.getElementById('tarjeta-canvas-container');
       if (!tarjetaEl) {
@@ -432,59 +432,48 @@
         return;
       }
 
-      // Mostrar indicador visual de carga en el botón
-      const btnDescarga = event.currentTarget;
-      const textoOriginal = btnDescarga.innerHTML;
-      btnDescarga.innerHTML = "<span>⏳ Generando imagen...</span>";
-      btnDescarga.disabled = true;
+      // Obtener el botón para mostrar el estado de carga
+      const btnDescarga = event ? event.currentTarget : null;
+      let textoOriginal = "";
+      if (btnDescarga) {
+        textoOriginal = btnDescarga.innerHTML;
+        btnDescarga.innerHTML = "<span>⏳ Generando...</span>";
+        btnDescarga.disabled = true;
+      }
 
       try {
+        // Configuramos html2canvas con opciones seguras para evitar bloqueos por CORS o imágenes externas
         let canvas = await html2canvas(tarjetaEl, { 
-          scale: 3, 
+          scale: 2, // Bajamos a 2 para garantizar velocidad y compatibilidad en móviles
           useCORS: true, 
           allowTaint: true,
-          backgroundColor: null 
+          backgroundColor: '#0f172a' // Forzamos un fondo sólido para prevenir transparencias erróneas
         });
 
         let imageURL = canvas.toDataURL("image/png");
 
-        // Creamos una ventana emergente limpia o un visor dentro del mismo modal con la imagen lista
-        let ventana = window.open();
-        if (ventana) {
-          ventana.document.write(`
-            <html>
-              <head>
-                <title>Tu Tarjeta - Misión Fe</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              </head>
-              <body style="background:#0f172a; color:white; text-align:center; font-family:sans-serif; padding:20px; margin:0;">
-                <h3 style="margin-bottom: 10px; font-size: 16px;">✨ ¡Tarjeta lista!</h3>
-                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 20px;">
-                  📱 <b>En celular:</b> Mantén presionada la imagen y selecciona "Guardar en fotos".<br>
-                  💻 <b>En PC:</b> Haz clic derecho sobre la imagen y "Guardar imagen como...".
-                </p>
-                <img src="${imageURL}" style="max-width:100%; height:auto; border-radius:16px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);" />
-                <br><br>
-                <button onclick="window.close()" style="background:#0284c7; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:bold; cursor:pointer;">Cerrar ventana</button>
-              </body>
-            </html>
-          `);
-        } else {
-          // Si el navegador bloquea la ventana emergente, usamos el método de enlace directo
-          const ancla = document.createElement('a');
-          ancla.href = imageURL;
-          ancla.download = `Devocional-MisionFe.png`;
-          document.body.appendChild(ancla);
-          ancla.click();
+        // Crear elemento de anclaje para descarga directa
+        const ancla = document.createElement('a');
+        ancla.href = imageURL;
+        ancla.download = `Devocional-MisionFe-${new Date().toISOString().split('T')[0]}.png`;
+        
+        document.body.appendChild(ancla);
+        ancla.click();
+        
+        // Limpieza del DOM tras la descarga
+        setTimeout(() => {
           document.body.removeChild(ancla);
-        }
+        }, 200);
 
       } catch (err) {
-        console.error("Error al generar la imagen:", err);
-        alert("Ocurrió un error al generar la tarjeta. Intenta tomar una captura de pantalla.");
+        console.error("Error crítico en html2canvas:", err);
+        alert("No se pudo descargar automáticamente. Por favor, toma una captura de pantalla a la tarjeta.");
       } finally {
-        btnDescarga.innerHTML = textoOriginal;
-        btnDescarga.disabled = false;
+        // Restaurar el botón a su estado normal
+        if (btnDescarga) {
+          btnDescarga.innerHTML = textoOriginal;
+          btnDescarga.disabled = false;
+        }
       }
     }
   </script>
