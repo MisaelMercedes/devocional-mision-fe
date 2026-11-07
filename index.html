@@ -56,6 +56,43 @@
       tg.expand();
     }
 
+    let modoPlanActivo = false;
+    let diaActualPlan = 1;
+
+    // Función para iniciar o continuar el plan de nuevos creyentes
+    async function iniciarPlanNuevosCreyentes(diaNum) {
+      modoPlanActivo = true;
+      diaActualPlan = diaNum || 1;
+      
+      // Mostrar pantalla de carga momentánea
+      document.getElementById('app-content').classList.add('hidden');
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('loading-text').innerText = `Cargando Día ${diaActualPlan} del Plan de Nuevos Creyentes...`;
+
+      try {
+        let response = await fetch(`${API_URL}?action=getPlanNuevosCreyentes&dia=${diaActualPlan}`);
+        let res = await response.json();
+
+        if (res && res.success && res.devocional) {
+          devocionalData = res.devocional;
+          renderDevocional();
+          
+          // Personalizar el título superior para identificar el plan activo
+          document.getElementById('fecha-txt').innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan}`;
+          
+        } else {
+          alert("No se encontró información para este día del plan.");
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('app-content').classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error("Error al cargar el plan:", err);
+        alert("Error de conexión al cargar el plan de discipulado.");
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+      }
+    }
+
     // Preferencias (Tema y Tipografía)
     function aplicarPreferencias() {
       const theme = localStorage.getItem('mf_theme') || 'dark';
