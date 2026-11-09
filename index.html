@@ -461,6 +461,15 @@
       document.getElementById('modal-tarjeta').classList.add('hidden');
     }
 
+    // Función para cambiar dinámicamente el estilo y color de la tarjeta visual
+    function cambiarColorTarjeta(claseFondo, claseBorde) {
+      const tarjeta = document.getElementById('tarjeta-visual');
+      if (tarjeta) {
+        // Limpiamos clases de degradado anteriores y aplicamos las nuevas
+        tarjeta.className = `rounded-xl p-5 text-white shadow-inner relative overflow-hidden transition-all duration-300 border ${claseFondo} ${claseBorde}`;
+      }
+    }
+    
 // Opción B: Copiar versículos formateados al portapapeles de forma infalible
     function descargarOCompartirTarjeta() {
       const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
