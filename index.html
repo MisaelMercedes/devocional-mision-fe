@@ -439,21 +439,33 @@
 
     function abrirModalTarjeta() {
       const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
-      if (versiculosActivos.length === 0) return;
+      if (versiculosActivos.length === 0) {
+        alert("Por favor, selecciona al menos un versículo haciendo clic sobre él antes de crear la tarjeta.");
+        return;
+      }
 
-      let contenedorTxt = document.getElementById('tarjeta-versiculos-txt');
-      contenedorTxt.innerHTML = "";
+      let contenedorTxt = document.getElementById('tarjeta-texto-versiculo');
+      if (contenedorTxt) {
+        contenedorTxt.innerHTML = "";
+        versiculosActivos.forEach(el => {
+          let p = document.createElement('p');
+          p.className = "mb-1 leading-relaxed";
+          p.innerHTML = el.innerHTML;
+          contenedorTxt.appendChild(p);
+        });
+      }
 
-      versiculosActivos.forEach(el => {
-        let p = document.createElement('p');
-        p.className = "text-xs leading-relaxed";
-        p.innerHTML = el.innerHTML;
-        contenedorTxt.appendChild(p);
-      });
+      // Sincronizamos fecha y cita con los elementos actuales de la pantalla
+      const fechaTxt = document.getElementById('fecha-txt');
+      const pasajeTitle = document.getElementById('pasaje-title');
+      
+      const tarjetaFecha = document.getElementById('tarjeta-fecha');
+      const tarjetaPasaje = document.getElementById('tarjeta-pasaje');
 
-      document.getElementById('tarjeta-fecha').innerText = document.getElementById('fecha-txt').innerText;
-      document.getElementById('tarjeta-cita-lbl').innerText = document.getElementById('pasaje-title').innerText;
+      if (tarjetaFecha && fechaTxt) tarjetaFecha.innerText = fechaTxt.innerText;
+      if (tarjetaPasaje && pasajeTitle) tarjetaPasaje.innerText = pasajeTitle.innerText;
 
+      // Mostramos el modal de la tarjeta
       document.getElementById('modal-tarjeta').classList.remove('hidden');
     }
 
