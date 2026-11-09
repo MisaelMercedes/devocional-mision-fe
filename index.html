@@ -75,9 +75,11 @@
 
         if (res && res.success && res.devocional) {
           devocionalData = res.devocional;
+          
+          // Renderizamos los textos base del devocional
           renderDevocional();
           
-          // Personalizar el título superior para identificar el plan activo
+          // Forzamos el título correcto del plan para evitar que renderDevocional() lo sobrescriba
           document.getElementById('fecha-txt').innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan}`;
           
         } else {
