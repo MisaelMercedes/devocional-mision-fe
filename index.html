@@ -685,65 +685,53 @@
   </div>
   
   <!-- MODAL DE TARJETA / VISTA PREVIA -->
-    <div id="modal-tarjeta" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-      <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
-        <div class="flex justify-between items-center">
-          <h3 class="text-white font-bold text-sm">📸 Tu tarjeta lista para compartir</h3>
-          <button onclick="cerrarModalTarjeta()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
-        </div>
-
-        <!-- Selector de Paleta de Colores Opcional -->
-        <div class="flex items-center justify-center space-x-3 py-1">
-          <span class="text-xs text-slate-400">Estilo:</span>
-          <button onclick="cambiarColorTarjeta('bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950', 'border-sky-500/30')" class="w-6 h-6 rounded-full bg-slate-900 border-2 border-sky-500 shadow-sm focus:outline-none" title="Azul Profundo"></button>
-          <button onclick="cambiarColorTarjeta('bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950', 'border-emerald-500/30')" class="w-6 h-6 rounded-full bg-emerald-900 border-2 border-emerald-500 shadow-sm focus:outline-none" title="Esmeralda"></button>
-          <button onclick="cambiarColorTarjeta('bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950', 'border-indigo-500/30')" class="w-6 h-6 rounded-full bg-indigo-900 border-2 border-indigo-500 shadow-sm focus:outline-none" title="Púrpura Inspiración"></button>
-          <button onclick="cambiarColorTarjeta('bg-gradient-to-br from-slate-950 via-amber-950 to-orange-950', 'border-amber-500/30')" class="w-6 h-6 rounded-full bg-amber-900 border-2 border-amber-500 shadow-sm focus:outline-none" title="Cálido Amanecer"></button>
-        </div>
-
-        <!-- CONTENEDOR DE LA TARJETA (El que sale en el Screenshot) -->
-        <div id="tarjeta-visual" class="bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 border border-sky-500/30 rounded-xl p-5 text-white shadow-inner relative overflow-hidden transition-all duration-300">
-          <div class="flex items-center space-x-2.5 mb-3">
-            <div class="w-8 h-8 rounded-full bg-sky-500/10 flex items-center justify-center border border-sky-500/20 text-sky-400 font-bold text-xs">✨</div>
-            <div>
-              <h4 class="font-bold text-xs tracking-wider text-sky-400 uppercase">MISIÓN FE</h4>
-              <p id="tarjeta-fecha" class="text-[10px] text-slate-400">Fecha del devocional</p>
-            </div>
-          </div>
-          
-          <div class="my-3">
-            <p id="tarjeta-texto-versiculo" class="text-xs italic text-slate-200 leading-relaxed">
-              <!-- Aquí se inyectan los versículos seleccionados -->
-            </p>
-          </div>
-
-          <div class="flex justify-between items-center text-[10px] text-slate-400 pt-2 border-t border-slate-800/60">
-            <span id="tarjeta-pasaje" class="font-medium text-sky-300">Cita bíblica</span>
-            <span class="font-bold text-sky-400">#DevocionalMisionFe</span>
-          </div>
-        </div>
-
-        <!-- Instrucción clara para motivar el Screenshot -->
-        <div class="bg-sky-500/10 border border-sky-500/20 rounded-xl p-2.5 text-center">
-          <p class="text-[11px] text-sky-300 font-medium">💡 <b>¡Toma un screenshot (captura de pantalla)!</b> Recórtala y compártela en tus redes o estados.</p>
-        </div>
-
-        <button onclick="cerrarModalTarjeta()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl transition text-xs">
-          Listo, cerrar
-        </button>
-      </div>
-    </div>
-
-      <!-- BOTONES DE ACCIÓN -->
-      <div class="space-y-2 pt-1">
-        <button onclick="descargarOCompartirTarjeta()" class="w-full bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 rounded-xl transition shadow-md text-xs flex items-center justify-center space-x-1.5">
-          <span>📋 Copiar versículos para compartir</span>
-        </button>
-        <button onclick="cerrarModalTarjeta()" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold py-2 rounded-xl transition text-xs">
-          Volver a la lectura
-        </button>
+  <div id="modal-tarjeta" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="text-white font-bold text-sm">📸 Tu tarjeta lista para compartir</h3>
+        <button onclick="cerrarModalTarjeta()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
       </div>
 
+      <!-- Selector de Paleta de Colores Opcional -->
+      <div class="flex items-center justify-center space-x-3 py-1">
+        <span class="text-xs text-slate-400">Estilo:</span>
+        <button onclick="cambiarColorTarjeta('bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950', 'border-sky-500/30')" class="w-6 h-6 rounded-full bg-slate-900 border-2 border-sky-500 shadow-sm focus:outline-none" title="Azul Profundo"></button>
+        <button onclick="cambiarColorTarjeta('bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950', 'border-emerald-500/30')" class="w-6 h-6 rounded-full bg-emerald-900 border-2 border-emerald-500 shadow-sm focus:outline-none" title="Esmeralda"></button>
+        <button onclick="cambiarColorTarjeta('bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950', 'border-indigo-500/30')" class="w-6 h-6 rounded-full bg-indigo-900 border-2 border-indigo-500 shadow-sm focus:outline-none" title="Púrpura Inspiración"></button>
+        <button onclick="cambiarColorTarjeta('bg-gradient-to-br from-slate-950 via-amber-950 to-orange-950', 'border-amber-500/30')" class="w-6 h-6 rounded-full bg-amber-900 border-2 border-amber-500 shadow-sm focus:outline-none" title="Cálido Amanecer"></button>
+      </div>
+
+      <!-- CONTENEDOR DE LA TARJETA (El que sale en el Screenshot) -->
+      <div id="tarjeta-visual" class="bg-gradient-to-br from-slate-950 via-slate-900 to-sky-950 border border-sky-500/30 rounded-xl p-5 text-white shadow-inner relative overflow-hidden transition-all duration-300">
+        <div class="flex items-center space-x-2.5 mb-3">
+          <div class="w-8 h-8 rounded-full bg-sky-500/10 flex items-center justify-center border border-sky-500/20 text-sky-400 font-bold text-xs">✨</div>
+          <div>
+            <h4 class="font-bold text-xs tracking-wider text-sky-400 uppercase">MISIÓN FE</h4>
+            <p id="tarjeta-fecha" class="text-[10px] text-slate-400">Fecha del devocional</p>
+          </div>
+        </div>
+        
+        <div class="my-3">
+          <p id="tarjeta-texto-versiculo" class="text-xs italic text-slate-200 leading-relaxed">
+            <!-- Aquí se inyectan los versículos seleccionados -->
+          </p>
+        </div>
+
+        <div class="flex justify-between items-center text-[10px] text-slate-400 pt-2 border-t border-slate-800/60">
+          <span id="tarjeta-pasaje" class="font-medium text-sky-300">Cita bíblica</span>
+          <span class="font-bold text-sky-400">#DevocionalMisionFe</span>
+        </div>
+      </div>
+
+      <!-- Instrucción clara para motivar el Screenshot -->
+      <div class="bg-sky-500/10 border border-sky-500/20 rounded-xl p-2.5 text-center">
+        <p class="text-[11px] text-sky-300 font-medium">💡 <b>¡Toma una captura de pantalla (screenshot)!</b> Recórtala y compártela en tus redes o estados.</p>
+      </div>
+
+      <!-- BOTONES DE ACCIÓN DENTRO DEL MODAL -->
+      <button onclick="cerrarModalTarjeta()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2 rounded-xl transition text-xs">
+        Volver a la lectura
+      </button>
     </div>
   </div>
 
