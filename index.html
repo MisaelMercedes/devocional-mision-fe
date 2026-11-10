@@ -64,7 +64,6 @@
       modoPlanActivo = true;
       diaActualPlan = diaNum || 1;
       
-      // Mostrar pantalla de carga momentánea
       document.getElementById('app-content').classList.add('hidden');
       document.getElementById('loading').classList.remove('hidden');
       document.getElementById('loading-text').innerText = `Cargando Día ${diaActualPlan} del Plan de Nuevos Creyentes...`;
@@ -80,11 +79,15 @@
         if (res && res.success && res.devocional) {
           devocionalData = res.devocional;
           
-          // Renderizamos el devocional con la estructura habitual
+          // Renderizamos el contenido
           renderDevocional();
           
-          // Ajustamos el título superior para el plan
+          // Forzamos el título correcto
           document.getElementById('fecha-txt').innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan}`;
+          
+          // Aseguramos que la pantalla de carga se oculte y aparezca el contenido
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('app-content').classList.remove('hidden');
           
         } else {
           console.warn("La respuesta no fue exitosa:", res);
