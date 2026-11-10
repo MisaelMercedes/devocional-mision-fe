@@ -60,45 +60,56 @@
     let diaActualPlan = 1;
 
     // Función para iniciar o controlar el plan de nuevos creyentes
-async function iniciarPlanNuevosCreyentes(diaNum) {
-  modoPlanActivo = true;
-  diaActualPlan = diaNum || 1;
-  
-  // Mostrar pantalla de carga momentánea
-  document.getElementById('app-content').classList.add('hidden');
-  document.getElementById('loading').classList.remove('hidden');
-  document.getElementById('loading-text').innerText = `Cargando Día ${diaActualPlan} del Plan de Nuevos Creyentes...`;
-
-  try {
-    let urlFetch = `${API_URL}?action=getPlanNuevosCreyentes&dia=${diaActualPlan}`;
-    console.log("Consultando URL:", urlFetch);
-
-    let response = await fetch(urlFetch);
-    let res = await response.json();
-    console.log("Respuesta recibida:", res);
-
-    if (res && res.success && res.devocional) {
-      devocionalData = res.devocional;
+    async function iniciarPlanNuevosCreyentes(diaNum) {
+      modoPlanActivo = true;
+      diaActualPlan = diaNum || 1;
       
-      // Renderizamos el devocional con la estructura habitual
-      renderDevocional();
-      
-      // Ajustamos el título superior para el plan
-      document.getElementById('fecha-txt').innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan}`;
-      
-    } else {
-      console.warn("La respuesta no fue exitosa:", res);
-      alert("No se encontró información para este día del plan.");
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('app-content').classList.remove('hidden');
+      // Mostrar pantalla de carga momentánea
+      document.getElementById('app-content').classList.add('hidden');
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('loading-text').innerText = `Cargando Día ${diaActualPlan} del Plan de Nuevos Creyentes...`;
+
+      try {
+        let urlFetch = `${API_URL}?action=getPlanNuevosCreyentes&dia=${diaActualPlan}`;
+        console.log("Consultando URL:", urlFetch);
+
+        let response = await fetch(urlFetch);
+        let res = await response.json();
+        console.log("Respuesta recibida:", res);
+
+        if (res && res.success && res.devocional) {
+          devocionalData = res.devocional;
+          
+          // Renderizamos el devocional con la estructura habitual
+          renderDevocional();
+          
+          // Ajustamos el título superior para el plan
+          document.getElementById('fecha-txt').innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan}`;
+          
+        } else {
+          console.warn("La respuesta no fue exitosa:", res);
+          alert("No se encontró información para este día del plan.");
+          document.getElementById('loading').classList.add('hidden');
+          document.getElementById('app-content').classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error("Error crítico al cargar el plan:", err);
+        alert("Error de conexión al cargar el plan de discipulado.");
+        document.getElementById('loading').classList.add('hidden');
+        document.getElementById('app-content').classList.remove('hidden');
+      }
     }
-  } catch (err) {
-    console.error("Error crítico al cargar el plan:", err);
-    alert("Error de conexión al cargar el plan de discipulado.");
-    document.getElementById('loading').classList.add('hidden');
-    document.getElementById('app-content').classList.remove('hidden');
-  }
-}
+
+    // Enlazado seguro y directo para el botón del Plan de Nuevos Creyentes
+    document.addEventListener("DOMContentLoaded", function() {
+      const btnPlan = document.getElementById("btn-iniciar-plan-nuevos");
+      if (btnPlan) {
+        btnPlan.addEventListener("click", function() {
+          console.log("¡Botón de Nuevos Creyentes presionado con éxito!");
+          iniciarPlanNuevosCreyentes(1);
+        });
+      }
+    });
 
     // Preferencias (Tema y Tipografía)
     function aplicarPreferencias() {
@@ -585,7 +596,7 @@ async function iniciarPlanNuevosCreyentes(diaNum) {
         </button>
 
         <!-- Nuevo botón para el Plan de Nuevos Creyentes -->
-        <button onclick="iniciarPlanNuevosCreyentes(1)" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 rounded-xl transition shadow-md text-xs flex items-center justify-center space-x-2 mt-2">
+        <button id="btn-iniciar-plan-nuevos" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold py-2.5 rounded-xl transition shadow-md text-xs flex items-center justify-center space-x-2 mt-2">
           <span>🌱 Iniciar Plan: Nuevos Creyentes (Día 1)</span>
         </button>
       </div>
