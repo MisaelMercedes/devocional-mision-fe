@@ -64,31 +64,33 @@
       modoPlanActivo = true;
       diaActualPlan = diaNum || 1;
       
-      // Mostrar pantalla de carga momentánea
       document.getElementById('app-content').classList.add('hidden');
       document.getElementById('loading').classList.remove('hidden');
       document.getElementById('loading-text').innerText = `Cargando Día ${diaActualPlan} del Plan de Nuevos Creyentes...`;
 
       try {
-        let response = await fetch(`${API_URL}?action=getPlanNuevosCreyentes&dia=${diaActualPlan}`);
+        let urlFetch = `${API_URL}?action=getPlanNuevosCreyentes&dia=${diaActualPlan}`;
+        console.log("Consultando URL:", urlFetch); // <--- NUEVO PARA DEPURAR
+
+        let response = await fetch(urlFetch);
         let res = await response.json();
+        console.log("Respuesta recibida:", res); // <--- NUEVO PARA DEPURAR
 
         if (res && res.success && res.devocional) {
           devocionalData = res.devocional;
           
-          // Renderizamos los textos base del devocional
           renderDevocional();
           
-          // Forzamos el título correcto del plan para evitar que renderDevocional() lo sobrescriba
           document.getElementById('fecha-txt').innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan}`;
           
         } else {
+          console.warn("La respuesta no fue exitosa:", res);
           alert("No se encontró información para este día del plan.");
           document.getElementById('loading').classList.add('hidden');
           document.getElementById('app-content').classList.remove('hidden');
         }
       } catch (err) {
-        console.error("Error al cargar el plan:", err);
+        console.error("Error crítico al cargar el plan:", err);
         alert("Error de conexión al cargar el plan de discipulado.");
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('app-content').classList.remove('hidden');
