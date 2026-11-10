@@ -227,7 +227,12 @@
       document.getElementById('app-content').classList.remove('hidden');
 
       const fechaCruda = devocionalData.fecha || "";
-      document.getElementById('fecha-txt').innerText = formatearFechaLarga(fechaCruda);
+      // Si el texto incluye la palabra DÍA o PLAN, se imprime directo; de lo contrario, se formatea como fecha normal
+      if (fechaCruda.includes("DÍA") || fechaCruda.includes("PLAN")) {
+        document.getElementById('fecha-txt').innerText = fechaCruda;
+      } else {
+        document.getElementById('fecha-txt').innerText = formatearFechaLarga(fechaCruda);
+      }
       
       const pasajeTexto = devocionalData.pasaje || devocionalData.pasaje_clave || "";
       document.getElementById('pasaje-title').innerText = pasajeTexto;
