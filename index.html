@@ -79,15 +79,24 @@
         if (res && res.success && res.devocional) {
           devocionalData = res.devocional;
           
-          // Renderizamos el contenido
+          // Renderizamos el contenido general
           renderDevocional();
           
           // Forzamos el título correcto
           document.getElementById('fecha-txt').innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan}`;
           
+          // Aplicamos el cambio de color a VERDE (Esmeralda) dinámicamente en los elementos clave
+          document.querySelectorAll('.accent-theme').forEach(el => {
+            el.classList.remove('text-sky-500', 'bg-sky-500', 'border-sky-500', 'hover:bg-sky-600');
+            el.classList.add('text-emerald-500', 'bg-emerald-600', 'border-emerald-500', 'hover:bg-emerald-700');
+          });
+
           // Aseguramos que la pantalla de carga se oculte y aparezca el contenido
           document.getElementById('loading').classList.add('hidden');
           document.getElementById('app-content').classList.remove('hidden');
+          
+          // SALTO DIRECTO: Evitamos el Paso 1 y saltamos directo a la lectura (Paso 2)
+          irAStep(2);
           
         } else {
           console.warn("La respuesta no fue exitosa:", res);
