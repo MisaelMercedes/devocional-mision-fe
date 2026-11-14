@@ -85,11 +85,18 @@
           // Forzamos el título correcto
           document.getElementById('fecha-txt').innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan}`;
           
-          // Aplicamos el cambio de color a VERDE (Esmeralda) dinámicamente en los elementos clave
+          // Cambiamos solo el COLOR DE TEXTO (no el fondo) a esmeralda/verde para el plan
           document.querySelectorAll('.accent-theme').forEach(el => {
-            el.classList.remove('text-sky-500', 'bg-sky-500', 'border-sky-500', 'hover:bg-sky-600');
-            el.classList.add('text-emerald-500', 'bg-emerald-600', 'border-emerald-500', 'hover:bg-emerald-700');
+            el.classList.remove('text-sky-600', 'text-sky-500', 'dark:text-sky-400');
+            el.classList.add('text-emerald-600', 'dark:text-emerald-400');
           });
+
+          // Cambiamos el botón inferior "Continuar" a verde para el plan
+          const btnContinuar = document.getElementById('btn-next-action');
+          if (btnContinuar) {
+            btnContinuar.classList.remove('bg-sky-500', 'hover:bg-sky-400', 'shadow-sky-500/20');
+            btnContinuar.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'shadow-emerald-600/20');
+          }
 
           // Aseguramos que la pantalla de carga se oculte y aparezca el contenido
           document.getElementById('loading').classList.add('hidden');
