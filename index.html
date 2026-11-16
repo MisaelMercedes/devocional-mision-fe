@@ -287,7 +287,8 @@
           if (numMatch) {
             let numVer = numMatch[1];
             let contenido = txt.replace(/^\d{1,3}[\.\s]?\s*/, '');
-            return `<span data-v="${numVer}" onclick="toggleResaltarVersiculo(this)" class="verse-item inline cursor-pointer px-1 py-0.5 rounded transition-colors duration-200"><strong class="text-sky-500 dark:text-sky-400 font-bold">${numVer}.</strong> ${contenido} </span>`;
+            let colorNumero = modoPlanActivo ? "text-emerald-600 dark:text-emerald-400" : "text-sky-500 dark:text-sky-400";
+            return `<span data-v="${numVer}" onclick="toggleResaltarVersiculo(this)" class="verse-item inline cursor-pointer px-1 py-0.5 rounded transition-colors duration-200"><strong class="${colorNumero} font-bold">${numVer}.</strong> ${contenido} </span>`;
           } else {
             return `<span>${txt} </span>`;
           }
@@ -305,7 +306,9 @@
       document.getElementById('oracion-txt').innerText = devocionalData.oracion || devocionalData.puntos_oracion || "";
       document.getElementById('desafio-txt').innerText = devocionalData.desafio || devocionalData.desafio_dia || "";
       
-      irAStep(1);
+      if (!modoPlanActivo) {
+        irAStep(1);
+      }
     }
 
     function renderHistorialSelector() {
