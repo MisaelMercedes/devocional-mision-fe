@@ -59,14 +59,33 @@
     let modoPlanActivo = false;
     let diaActualPlan = 1;
 
+    // Obtener progreso guardado del usuario (del 1 al 7)
+    function obtenerProgresoPlan() {
+      let dia = parseInt(localStorage.getItem('plan_nuevos_dia') || '1', 10);
+      return (dia >= 1 && dia <= 7) ? dia : 1;
+    }
+
+    // Actualizar el texto del botón inicial con el día que le toca al usuario
+    function actualizarBotonPlanInicio() {
+      const btnPlan = document.getElementById("btn-iniciar-plan-nuevos");
+      if (!btnPlan) return;
+      let diaGuardado = obtenerProgresoPlan();
+      let completado = localStorage.getItem('plan_nuevos_completado') === 'true';
+      if (completado) {
+        btnPlan.innerHTML = `<span>🏆 Plan Nuevos Creyentes Completado (Repasar Día 1)</span>`;
+      } else {
+        btnPlan.innerHTML = `<span>🌱 ${diaGuardado === 1 ? 'Iniciar' : 'Continuar'} Plan: Nuevos Creyentes (Día ${diaGuardado} de 7)</span>`;
+      }
+    }
+
     // Función para iniciar o controlar el plan de nuevos creyentes
-    async function iniciarPlanNuevosCreyentes(diaNum) {
+    async function iniciarPlanNuevosCreyentes(diaForzado) {
       modoPlanActivo = true;
-      diaActualPlan = diaNum || 1;
+      diaActualPlan = diaForzado || obtenerProgresoPlan();
       
       document.getElementById('app-content').classList.add('hidden');
       document.getElementById('loading').classList.remove('hidden');
-      document.getElementById('loading-text').innerText = `Cargando Día ${diaActualPlan} del Plan de Nuevos Creyentes...`;
+      document.getElementById('loading-text').innerText = `Cargando Día ${diaActualPlan} de 7 del Plan de Nuevos Creyentes...`;
 
       try {
         let urlFetch = `${API_URL}?action=getPlanNuevosCreyentes&dia=${diaActualPlan}`;
@@ -83,7 +102,7 @@
           renderDevocional();
           
           // Forzamos el título correcto
-          document.getElementById('fecha-txt').innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan}`;
+          document.getElementById('fecha-txt').innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan} DE 7`;
           
           // Cambiamos solo el COLOR DE TEXTO (no el fondo) a esmeralda/verde para el plan
           document.querySelectorAll('.accent-theme').forEach(el => {
@@ -91,12 +110,11 @@
             el.classList.add('text-emerald-600', 'dark:text-emerald-400');
           });
 
-          // Cambiamos el botón inferior "Continuar" a verde para el plan
-          const btnContinuar = document.getElementById('btn-next-action');
-          if (btnContinuar) {
-            btnContinuar.classList.remove('bg-sky-500', 'hover:bg-sky-400', 'shadow-sky-500/20');
-            btnContinuar.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'shadow-emerald-600/20');
-          }
+          // Mostramos claramente en qué día del plan está el usuario en cada paso (Pasos 1 al 4)
+          const etiquetasPaso = document.querySelectorAll('#step-2 span.accent-theme, #step-3 span.accent-theme, #step-4 span.accent-theme, #step-5 span.accent-theme');
+          etiquetasPaso.forEach((span, idx) => {
+            span.innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan} DE 7 • PASO ${idx + 1} DE 4`;
+          });
 
           // Aseguramos que la pantalla de carga se oculte y aparezca el contenido
           document.getElementById('loading').classList.add('hidden');
@@ -107,7 +125,7 @@
           
         } else {
           console.warn("La respuesta no fue exitosa:", res);
-          alert("No se encontró información para este día del plan.");
+          alert("No se encontró información para el Día " + diaActualPlan + " del plan.");
           document.getElementById('loading').classList.add('hidden');
           document.getElementById('app-content').classList.remove('hidden');
         }
@@ -118,17 +136,6 @@
         document.getElementById('app-content').classList.remove('hidden');
       }
     }
-
-    // Enlazado seguro y directo para el botón del Plan de Nuevos Creyentes
-    document.addEventListener("DOMContentLoaded", function() {
-      const btnPlan = document.getElementById("btn-iniciar-plan-nuevos");
-      if (btnPlan) {
-        btnPlan.addEventListener("click", function() {
-          console.log("¡Botón de Nuevos Creyentes presionado con éxito!");
-          iniciarPlanNuevosCreyentes(1);
-        });
-      }
-    });
 
     // Preferencias (Tema y Tipografía)
     function aplicarPreferencias() {
@@ -262,7 +269,6 @@
       document.getElementById('app-content').classList.remove('hidden');
 
       const fechaCruda = devocionalData.fecha || "";
-      // Si el texto incluye la palabra DÍA o PLAN, se imprime directo; de lo contrario, se formatea como fecha normal
       if (fechaCruda.includes("DÍA") || fechaCruda.includes("PLAN")) {
         document.getElementById('fecha-txt').innerText = fechaCruda;
       } else {
@@ -341,6 +347,22 @@
     }
 
     function irAStep(step) {
+      // Si el usuario retrocede al inicio desde el plan, restauramos los colores celestes normales y recargamos el devocional diario
+      if (step === 1 && modoPlanActivo) {
+        modoPlanActivo = false;
+        document.querySelectorAll('.accent-theme').forEach(el => {
+          el.classList.remove('text-emerald-600', 'dark:text-emerald-400');
+          el.classList.add('text-sky-600', 'dark:text-sky-400');
+        });
+        const etiquetasPaso = document.querySelectorAll('#step-2 span.accent-theme, #step-3 span.accent-theme, #step-4 span.accent-theme, #step-5 span.accent-theme');
+        etiquetasPaso.forEach((span, idx) => {
+          span.innerText = `PASO ${idx + 1} DE 4`;
+        });
+        actualizarBotonPlanInicio();
+        cargarDevocional();
+        return;
+      }
+
       currentStep = step;
       document.querySelectorAll('.step-pane').forEach(el => el.classList.add('hidden'));
       document.getElementById(`step-${step}`).classList.remove('hidden');
@@ -358,7 +380,12 @@
       if (step === 5) {
         btnNextAction.className = "flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2.5 px-3 rounded-2xl transition shadow-md text-xs flex items-center justify-center space-x-1";
         btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Completar</span><span>✨</span>';
+      } else if (modoPlanActivo) {
+        // Botón "Continuar" en VERDE exclusivo para el Plan de Nuevos Creyentes
+        btnNextAction.className = "flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-3 rounded-2xl transition shadow-md text-xs flex items-center justify-center space-x-1";
+        btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Continuar</span><span>➡️</span>';
       } else {
+        // Botón "Continuar" en CELESTE original para el devocional diario
         btnNextAction.className = "flex-1 bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold py-2.5 px-3 rounded-2xl transition shadow-md text-xs flex items-center justify-center space-x-1";
         btnNextAction.innerHTML = '<span id="btn-next-text" class="text-sm font-bold">Continuar</span><span>➡️</span>';
       }
@@ -384,6 +411,17 @@
       btnNextAction.innerText = "Guardando...";
       btnNextAction.disabled = true;
 
+      // Guardamos el avance al siguiente día si está en el Plan de Nuevos Creyentes
+      if (modoPlanActivo) {
+        if (diaActualPlan < 7) {
+          localStorage.setItem('plan_nuevos_dia', String(diaActualPlan + 1));
+          localStorage.setItem('plan_nuevos_completado', 'false');
+        } else {
+          localStorage.setItem('plan_nuevos_dia', '1');
+          localStorage.setItem('plan_nuevos_completado', 'true');
+        }
+      }
+
       let url = `${API_URL}?action=registrarLectura&telegramId=${telegramId}&nombre=${nombre}&idDevocional=${idDev}&compromiso=${compromiso}`;
       
       fetch(url)
@@ -391,10 +429,19 @@
         .then(data => {
           btnNextAction.disabled = false;
 
-          if (data && data.success) {
+          if (modoPlanActivo) {
+            if (diaActualPlan === 7) {
+              document.getElementById('arbol-emoji').innerText = "🏆🌳";
+              document.getElementById('arbol-txt').innerText = "¡Felicidades! Completaste los 7 días de Nuevos Creyentes";
+              document.getElementById('racha-val').innerText = "🔥 7 DE 7 DÍAS COMPLETADOS";
+            } else {
+              document.getElementById('arbol-emoji').innerText = "🌱✨";
+              document.getElementById('arbol-txt').innerText = `¡Día ${diaActualPlan} completado! Mañana continúa con el Día ${diaActualPlan + 1}`;
+              document.getElementById('racha-val').innerText = `🔥 RACHA PLAN: ${diaActualPlan} DE 7 DÍAS`;
+            }
+          } else if (data && data.success) {
             let racha = data.racha || 1;
             let nivel = data.nivelArbol || 1;
-            
             let emojis = { 1: "🌱", 2: "🌿", 3: "🌸", 4: "🌳🍎" };
             let titulos = { 
               1: "Brote: Iniciando el hábito", 
@@ -412,13 +459,28 @@
         .catch(err => {
           console.error("Error al registrar:", err);
           btnNextAction.disabled = false;
+          if (modoPlanActivo) {
+            document.getElementById('arbol-emoji').innerText = diaActualPlan === 7 ? "🏆🌳" : "🌱✨";
+            document.getElementById('arbol-txt').innerText = diaActualPlan === 7 ? "¡Completaste los 7 días del Plan!" : `¡Día ${diaActualPlan} completado!`;
+            document.getElementById('racha-val').innerText = `🔥 RACHA PLAN: ${diaActualPlan} DE 7 DÍAS`;
+          }
           irAStep(6);
         });
     }
 
+    // Inicialización única y ordenada
     document.addEventListener("DOMContentLoaded", () => {
       aplicarPreferencias();
       cargarDevocional();
+      actualizarBotonPlanInicio();
+
+      const btnPlan = document.getElementById("btn-iniciar-plan-nuevos");
+      if (btnPlan) {
+        btnPlan.addEventListener("click", function() {
+          let completado = localStorage.getItem('plan_nuevos_completado') === 'true';
+          iniciarPlanNuevosCreyentes(completado ? 1 : obtenerProgresoPlan());
+        });
+      }
     });
 
     function toggleResaltarVersiculo(elemento) {
@@ -500,7 +562,6 @@
         });
       }
 
-      // Sincronizamos fecha y cita con los elementos actuales de la pantalla
       const fechaTxt = document.getElementById('fecha-txt');
       const pasajeTitle = document.getElementById('pasaje-title');
       
@@ -510,7 +571,6 @@
       if (tarjetaFecha && fechaTxt) tarjetaFecha.innerText = fechaTxt.innerText;
       if (tarjetaPasaje && pasajeTitle) tarjetaPasaje.innerText = pasajeTitle.innerText;
 
-      // Mostramos el modal de la tarjeta
       document.getElementById('modal-tarjeta').classList.remove('hidden');
     }
 
@@ -518,16 +578,13 @@
       document.getElementById('modal-tarjeta').classList.add('hidden');
     }
 
-    // Función para cambiar dinámicamente el estilo y color de la tarjeta visual
     function cambiarColorTarjeta(claseFondo, claseBorde) {
       const tarjeta = document.getElementById('tarjeta-visual');
       if (tarjeta) {
-        // Limpiamos clases de degradado anteriores y aplicamos las nuevas
         tarjeta.className = `rounded-xl p-5 text-white shadow-inner relative overflow-hidden transition-all duration-300 border ${claseFondo} ${claseBorde}`;
       }
     }
     
-// Opción B: Copiar versículos formateados al portapapeles de forma infalible
     function descargarOCompartirTarjeta() {
       const versiculosActivos = document.querySelectorAll('.verse-item.favorito-activo');
       if (versiculosActivos.length === 0) {
@@ -537,19 +594,15 @@
 
       let textoVersiculos = "";
       versiculosActivos.forEach(el => {
-        // Limpiamos y extraemos el texto limpio del versículo
         textoVersiculos += el.innerText.trim() + " ";
       });
 
       let citaPasaje = document.getElementById('pasaje-title').innerText;
       let fechaTexto = document.getElementById('fecha-txt').innerText;
 
-      // Armamos un mensaje elegante y listo para compartir
       let mensajeFinal = `🌟 *Devocional Misión Fe* (${fechaTexto})\n📖 *${citaPasaje}*\n\n"${textoVersiculos.trim()}"\n\n#DevocionalMisionFe`;
 
-      // Copiar al portapapeles usando la API moderna del navegador
       navigator.clipboard.writeText(mensajeFinal).then(() => {
-        // Mostrar aviso visual de éxito en el mismo botón o mediante alerta rápida
         const btn = event ? event.currentTarget : null;
         if (btn) {
           let originalText = btn.innerHTML;
