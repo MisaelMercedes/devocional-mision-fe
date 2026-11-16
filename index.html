@@ -110,8 +110,8 @@
             el.classList.add('text-emerald-600', 'dark:text-emerald-400');
           });
 
-          // Mostramos claramente en qué día del plan está el usuario en cada paso (Pasos 1 al 4)
-          const etiquetasPaso = document.querySelectorAll('#step-2 span.accent-theme, #step-3 span.accent-theme, #step-4 span.accent-theme, #step-5 span.accent-theme');
+          // Mostramos claramente en qué día del plan está el usuario (sin tocar la cita bíblica)
+          const etiquetasPaso = document.querySelectorAll('#step-2 .space-y-0\\.5 > span.accent-theme, #step-3 .space-y-0\\.5 > span.accent-theme, #step-4 .space-y-0\\.5 > span.accent-theme, #step-5 .space-y-0\\.5 > span.accent-theme');
           etiquetasPaso.forEach((span, idx) => {
             span.innerText = `PLAN NUEVOS CREYENTES • DÍA ${diaActualPlan} DE 7 • PASO ${idx + 1} DE 4`;
           });
@@ -354,7 +354,7 @@
           el.classList.remove('text-emerald-600', 'dark:text-emerald-400');
           el.classList.add('text-sky-600', 'dark:text-sky-400');
         });
-        const etiquetasPaso = document.querySelectorAll('#step-2 span.accent-theme, #step-3 span.accent-theme, #step-4 span.accent-theme, #step-5 span.accent-theme');
+        const etiquetasPaso = document.querySelectorAll('#step-2 .space-y-0\\.5 > span.accent-theme, #step-3 .space-y-0\\.5 > span.accent-theme, #step-4 .space-y-0\\.5 > span.accent-theme, #step-5 .space-y-0\\.5 > span.accent-theme');
         etiquetasPaso.forEach((span, idx) => {
           span.innerText = `PASO ${idx + 1} DE 4`;
         });
